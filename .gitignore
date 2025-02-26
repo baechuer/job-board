@@ -1,0 +1,49 @@
+# Ignore Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Virtual Environment
+venv/
+.venv/
+.env
+.env.local
+
+# Ignore PostgreSQL-related files
+*.pgsql
+*.pgsql.gz
+*.sql
+*.sql.gz
+pgdata/
+
+# Ignore Flask instance, migrations, and logs
+instance/
+migrations/
+logs/
+*.log
+
+# Ignore IDE and Editor files
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+
+# Ignore Python dependencies
+pip-log.txt
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+
+# Ignore Docker-related files
+docker-compose.override.yml
+.dockerignore
+
+# Ignore secrets and configuration files
+config.py
+settings.py
+secrets.json
