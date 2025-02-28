@@ -36,10 +36,13 @@ def login():
         user = get_user_by_username(form.username.data)
         if user and check_password_hash(user.password, form.password.data):
             login_user(user)
+            session['logged_in'] = True
+            session['username'] = form.username.data
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password', 'danger')
     page["title"] = "Login"
+
     return render_template('login.html', form=form, page=page)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -66,6 +69,8 @@ def dashboard():
 @login_required
 def logout():
     logout_user()
+    session.pop('logged_in', None)
+    session.pop('username', None)
     return redirect(url_for('login'))
 
 @app.route('/users', methods=['POST', 'GET'])

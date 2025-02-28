@@ -3,7 +3,7 @@
     <h1>Login</h1>
     <div class="form-container">
         <div class="login_form">
-            <form method="POST">
+            <form method="POST" id="login">
                 {{ form.hidden_tag() }}
                 <label>Username:</label>
                 {{ form.username }}
@@ -16,7 +16,4 @@
             </div>
         </div>
     </div>
-
-
-
 {% endblock %}

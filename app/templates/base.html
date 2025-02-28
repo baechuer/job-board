@@ -3,6 +3,7 @@
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="script" type="text/javascript" href="{{ url_for('static', filename='js/script.js') }}">
     <title>{{ page.title }}</title>
 </head>
 <body>
@@ -16,6 +17,7 @@
                     <a href="{{ url_for('index') }}">Home</a>
                 {% endif %}
                 {% if session.logged_in %}
+                    <a href="{{ url_for('logout') }}">Logout</a>
                 {% else %}
                     <a href="{{ url_for('login') }}">Login</a>
                     <a href="{{ url_for('register') }}">Register</a>
