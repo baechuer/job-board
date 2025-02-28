@@ -2,15 +2,18 @@
 {% block content %}
     <!-- register.html -->
     <h1>Register</h1>
-    <div class="register_form">
-        <form method="POST">
-            {{ form.hidden_tag() }}
-            <label>Username:</label>
-            {{ form.username }}
-            <label>Password:</label>
-            {{ form.password }}
-            {{ form.submit }}
-        </form>
+    <div class="form-container">
+        <div class="login_form">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <label>Username:</label>
+                {{ form.username }}
+                <label>Password:</label>
+                {{ form.password }}
+                {{ form.submit }}
+            </form>
+            <a href="{{ url_for('login') }}">Already have an account? Login</a>
+        </div>
     </div>
-    <a href="{{ url_for('login') }}">Already have an account? Login</a>
+
 {% endblock %}

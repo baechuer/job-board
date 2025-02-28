@@ -86,5 +86,3 @@ def users():
             return make_response(jsonify({'users' : [user.json() for user in users]}), 200)
         except:
             return make_response(jsonify({'message': 'error fetching users'}), 500)
-        
-
