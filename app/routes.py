@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, make_response, redirect, url_for, Blueprint, flash
+from flask import Flask, request, jsonify, render_template, make_response, redirect, url_for, flash, session
 from .database import *
 from .models import db, User
 import logging
@@ -86,3 +86,5 @@ def users():
             return make_response(jsonify({'users' : [user.json() for user in users]}), 200)
         except:
             return make_response(jsonify({'message': 'error fetching users'}), 500)
+        
+

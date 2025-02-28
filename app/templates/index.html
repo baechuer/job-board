@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Job Board</h1>
-    <a href="{{ url_for('login') }}">Login</a>
+    <h1>Welcome to Job Board</h1>
+    <div class="index-image">
+        <img src="{{ url_for('static', filename='images/Designer (2).jpeg') }}" class="index-image-image">
+        
+    </div>
 
 {% endblock %}

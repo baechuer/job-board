@@ -7,6 +7,21 @@
 </head>
 <body>
     <div class="content">
+        <div class="top-nav">
+            <div class="nav-icon">
+                <img src="{{ url_for('static', filename='images/a cute panda.png') }}" alt="icon" class="nav-icon-image">
+            </div>
+            <div class="nav-item">
+                {% if request.path != '/' %}
+                    <a href="{{ url_for('index') }}">Home</a>
+                {% endif %}
+                {% if session.logged_in %}
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
+        </div>
         {% block content %}{% endblock %}
     </div>
 </body>
