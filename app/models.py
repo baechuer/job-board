@@ -13,8 +13,6 @@ class User(db.Model):
     password = db.Column(db.String(80), nullable = False)
     ### 1 = admin, 2 = user
     userrole = db.Column(db.Integer, nullable = False)
-    ### Password Salt
-    salt = db.Column(db.String(5), nullable = False)
 
     def json(self):
         return {'id': self.id, 'username':self.username, 'userrole':self.userrole}

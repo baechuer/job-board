@@ -11,6 +11,7 @@ services:
       - FLASK_APP=app.routes.py
       - FLASK_ENV=development
       - DB_URL=postgresql://postgres:postgres@flask_db:5432/postgres  # ✅ Fixed key
+      - SECRET_KEY=sOmeSecreTKey1!
     depends_on:
       - flask_db
 

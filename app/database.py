@@ -18,9 +18,9 @@ def drop_all(app):
 
 ### User functions
 # Create User
-def create_user(username, password, userrole, salt):
+def create_user(username, password, userrole):
     """Create a new user in the database."""
-    user = User(username=username, password=password, userrole=userrole, salt=salt)
+    user = User(username=username, password=password, userrole=userrole)
     db.session.add(user)
     db.session.commit()
 
@@ -43,6 +43,7 @@ def update_user_password(username, password, new_password):
         return True
     return False
 
+# Update User Role
 def update_userrole(username, userrole):
     """Update a user's role."""
     user = get_user_by_username(username)
@@ -52,6 +53,7 @@ def update_userrole(username, userrole):
     db.session.commit()
     return True
 
+# Get All Users
 def get_all_users():
     """Get all users."""
     return User.query.all()

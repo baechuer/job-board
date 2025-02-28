@@ -2,3 +2,5 @@ flask
 psycopg2-binary
 Flask-SQLAlchemy
 pytest-postgresql
+flask_login
+flask_wtf
