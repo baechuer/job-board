@@ -55,7 +55,7 @@ def register():
         flash('Account created! You can now log in.', 'success')
         return redirect(url_for('login'))
     page["title"] = "Register"
-    return render_template('register.html', form=form)
+    return render_template('register.html', form=form, page=page)
 
 @app.route('/dashboard')
 @login_required
