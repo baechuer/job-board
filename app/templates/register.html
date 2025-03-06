@@ -10,6 +10,10 @@
                 {{ form.username }}
                 <label>Password:</label>
                 {{ form.password }}
+                <label>Account Type:</label>
+                {{ form.userrole }}
+                <label>Email Address</label>
+                {{ form.email }}
                 {{ form.submit }}
             </form>
             <a href="{{ url_for('login') }}">Already have an account? Login</a>

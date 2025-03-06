@@ -104,6 +104,14 @@ form input {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+
+form select {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
 #submit {
     background-color: #403D39;
     color: white;
@@ -116,4 +124,36 @@ form input {
 #submit:hover {
     background-color: #252422;
 }
+.alert {
+    padding: 20px;
+    background-color: #CCC5B9;
+    color: white;
+    margin-bottom: 15px;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;  /* This ensures vertical centering */
+    padding: 1rem 1rem;
+}
+.alert-warning {
+    background-color: #403D39;  /* Custom yellow */
+    color: white;               /* Darker text */
+    border: 2px solid #403D39; /* Orange border */
+    font-weight: bold;
+    font-size: 1.5rem;
+    text-align: center;
+    justify-content: center;
+}
 
+/* Optional: customize close button */
+.alert .btn-close {
+    margin-left: 1rem;
+    padding: 0.5rem 0.5rem;
+    background-color: #403D39;
+    filter: invert(1); /* Makes the close icon white/black depending on background */
+}
+.alert .btn-close:hover {
+    background-color: #252422;
+}

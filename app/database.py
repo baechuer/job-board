@@ -18,13 +18,17 @@ def drop_all(app):
 
 ### User functions
 # Create User
-def create_user(username, password, userrole):
-    """Create a new user in the database."""
-    user = User(username=username, password=password, userrole=userrole)
+def create_user(username, password, userrole, email):
+    if get_user_by_username('admin') is not None and userrole == 1:
+        return False
+    user = User(username=username, password=password, userrole=userrole, email=email)
     db.session.add(user)
     db.session.commit()
 
     return user
+def get_user_by_email(email):
+    """Get a user by email."""
+    return User.query.filter_by(email=email).first()
 
 # Get User by ID
 def get_user_by_username(username):

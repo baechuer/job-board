@@ -11,6 +11,7 @@ venv/
 .env
 .env.local
 
+
 # Ignore PostgreSQL-related files
 *.pgsql
 *.pgsql.gz
@@ -48,3 +49,4 @@ docker-compose.override.yml
 config.py
 settings.py
 secrets.json
+environ.sh
