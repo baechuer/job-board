@@ -22,3 +22,6 @@ class User(db.Model, UserMixin):
         self.is_active = active
     def json(self):
         return {'id': self.id, 'username':self.username, 'userrole':self.userrole}
+    
+    def set_password(self, password):
+        self.password = password

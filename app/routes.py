@@ -5,7 +5,7 @@ import logging
 from app import create_app
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from .forms import LoginForm, RegisterForm
+from .forms import *
 from .security import *
 from flask_mail import Message, Mail
 
@@ -36,13 +36,21 @@ def create_default_user():
             verified=True
         )
         db.session.add(default_user)
-        db.session.commit()
 
         default_user = User(
             username='abc',
             password=generate_password_hash('abc'),
             userrole=2,
             email="someemail1@email.com",
+            verified=True       
+        )
+        db.session.add(default_user)
+
+        default_user = User(
+            username='firm',
+            password=generate_password_hash('firm'),
+            userrole=3,
+            email="someemail2@email.com",
             verified=True       
         )
         db.session.add(default_user)
@@ -149,7 +157,7 @@ def send_verification_email(user, serialiser):
         flash(f'Error sending email: {str(e)}', 'danger')  # Optional: Show error message
         print(f"Error sending email: {str(e)}") 
 
-@app.route('/verify_email/<token>')
+@app.route('/verify_email/<token>', methods=["GET"])
 def verify_email(token):
     email = verify_token(token, serialiser=serialiser)
     if email is None:
@@ -166,3 +174,47 @@ def verify_email(token):
         db.session.commit()
         flash('Email verified! You can now log in.', 'success')
     return redirect(url_for('login'))
+
+#Changing password
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password_request():
+    page["title"] = "Reset Password"
+    if request.method == 'POST':
+        email = request.form['email']
+        user = get_user_by_email(email)
+        if user:
+            token = serialiser.dumps(user.email, salt='password-reset')
+            reset_link = url_for('reset_password', token=token, _external=True)
+            # Send email with the reset link
+            msg = Message('Reset Password',
+                        recipients=[user.email],
+                        sender=app.config['MAIL_USERNAME'],
+                        body=f'Click the link to reset your password: {reset_link}'
+                    )
+            mail.send(msg)
+        flash('If your email is in our system, a reset link has been sent.')
+        return redirect(url_for('login'))
+    return render_template('reset_password_request.html', page=page)
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    page["title"] = "Entering New Password"
+    try:
+        email = serialiser.loads(token, salt='password-reset', max_age=3600)  # 1 hour expiry
+    except Exception:
+        flash('The password reset link is invalid or expired.')
+        return redirect(url_for('reset_password_request'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        if form.new_password.data != form.new_password_repeat.data:
+            flash("Please repeat your password", "danger")
+            return render_template('reset_password.html', form=form, page=page)
+        user = get_user_by_email(email)
+        user.set_password(generate_password_hash(form.new_password.data))  # assuming you have a method like this
+        db.session.commit()
+        flash('Your password has been updated.')
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', form=form, page=page)
+
+

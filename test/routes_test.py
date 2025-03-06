@@ -36,15 +36,19 @@ class RoutesTest(unittest.TestCase):
     @patch('flask_mail.Mail.send')  # Mock the send method from flask_mail.Mail
     def test_register(self, mock_send):
         with self.client as client:
-            response = client.post('/register', data=dict(username='testuser',
+            response = client.get('/register', data=dict(username='testuser',
                             password='testpassword', userrole=2, email='testemail@email.com'),
                             follow_redirects=True)
             self.assertEqual(response.status_code, 200)
             mock_send.assert_called_once()
             user = get_user_by_username('testuser')
             self.assertIsNotNone(user)
+    def test_email_verification(self):
+        token = generate_verification_token("test@email.com", serialiser)
+        create_user('testuser2', 'testpassword', Roles.USER.value, 'test@email.com')
+        response = self.client.post(f'/verify_email/{token}')
+        self.assertEqual(response.status_code, 302)
 
 
-    
 if __name__ == '__main__':
     unittest.main()

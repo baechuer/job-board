@@ -61,6 +61,7 @@ h1 {
 .form-container {
     display: flex;
     justify-content: center;  /* Horizontally center the login_form */
+    text-align: center;
     align-items: flex-start;  /* Align the login_form to the top */
     padding-top: 100px;  /* Optional, to add some space from the top */
 }
@@ -74,7 +75,10 @@ h1 {
     flex-direction: column;
     justify-content: center;
 }
-
+.login_form .url {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
 .login_form a {
     color: #403D39;
     background-color: #CCC5B9;
@@ -86,7 +90,6 @@ h1 {
     text-align: center;
     padding-top: 5px;
     padding-bottom: 5px;
-    margin-left: 17px;
 }
 form {
     display: flex;

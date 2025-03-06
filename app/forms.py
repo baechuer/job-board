@@ -15,3 +15,8 @@ class RegisterForm(FlaskForm):
                         coerce=int, validators=[DataRequired()]
     )
     submit = SubmitField("Register")
+
+class ResetPasswordForm(FlaskForm):
+    new_password = PasswordField("Password", validators=[DataRequired()])
+    new_password_repeat = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Change Password")
