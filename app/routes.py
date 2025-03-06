@@ -43,11 +43,10 @@ def create_default_user():
             password=generate_password_hash('abc'),
             userrole=2,
             email="someemail1@email.com",
-            verified=True
+            verified=True       
         )
         db.session.add(default_user)
         db.session.commit()
-        print("✅ Default admin user created.")
     else:
         print("ℹ️ Default admin user already exists.")
 with app.app_context():
