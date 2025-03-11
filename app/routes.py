@@ -112,7 +112,8 @@ def register():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return f'Welcome, {current_user.username}! <a href="{url_for("logout")}">Logout</a>'
+    page['title'] = 'Dashboard'
+    return render_template('dashboard.html', page=page)
 
 @app.route('/logout')
 @login_required

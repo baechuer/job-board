@@ -15,7 +15,11 @@
             </div>
             <div class="nav-item">
                 {% if request.path != '/' %}
-                    <a href="{{ url_for('index') }}">Home</a>
+                    {% if session.logged_in %}
+                        <a href="{{ url_for('dashboard') }}">Home</a>
+                    {% else %}
+                        <a href="{{ url_for('index') }}">Home</a>
+                    {% endif %}
                 {% endif %}
                 {% if session.logged_in %}
                     <a href="{{ url_for('logout') }}">Logout</a>

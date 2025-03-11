@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Dashboard</h1>
+    <div class="dash-container">
+        <div class="dashboard-container">
+            <div class="dashboard-search">
+            </div>
+            <div class="dashboard-item">
+                <div class="item-top">
+                    <img src="{{ url_for('static', filename='images/a cute panda.png') }}" alt="icon" class="item-icon-image">
+                    <h3>Job Title</h3>
+                </div>
+                <div>
+                    <p class="dashboard-item-text">Some description fo the job</p>
+                    <p>Some location display here</p>
+                    <p>Time stamp</p>
+                </div>
+                <form>
+                    <input type="submit" value="Apply">
+                </form>
+            </div>
+            <div class="dashboard-item">
+                <div class="item-top">
+                    <img src="{{ url_for('static', filename='images/a cute panda.png') }}" alt="icon" class="item-icon-image">
+                    <h3>Job Title</h3>
+                </div>
+                <div>
+                    <p class="dashboard-item-text">Some description fo the job</p>
+                    <p>Some location display here</p>
+                    <p>Time stamp</p>
+                </div>
+                <form>
+                    <input type="submit" value="Apply">
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -160,3 +160,51 @@ form select {
 .alert .btn-close:hover {
     background-color: #252422;
 }
+.dash-container {
+    display: flex;
+    justify-content: center;
+}
+.dashboard-container {
+    background-color: #CCC5B9;
+    display: flex;
+    align-items: flex-start;  /* Align the login_form to the top */
+    padding: 75px 75px 50px 50px;
+    border-radius: 10px;
+    width: 80vw;
+    height: 60vh;
+    overflow: auto;
+}
+
+.dashboard-item {
+    background-color: #403D39;
+    width: 250px;
+    height: 300px;
+    border-radius: 10px;
+    display: flex;
+    justify-content:flex-start;
+    flex-direction: column;
+    color: white;
+    overflow: auto;
+    margin-left: 30px;
+}
+
+.item-icon-image {
+    width: 60px;
+    height: 60px;
+    margin-top: 15px;
+    margin-left: 15px;
+}
+.dashboard-item h3 {
+    margin-left: 15px;
+    margin-top: 30px;
+
+}
+.dashboard-item p {
+    margin-left: 15px;
+    margin-top: 30px;
+}
+.item-top {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
