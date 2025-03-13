@@ -163,31 +163,47 @@ form select {
 .dash-container {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    overflow: hidden;
+
 }
 .dashboard-container {
+    margin-top: 20px;
     background-color: #CCC5B9;
     display: flex;
-    align-items: flex-start;  /* Align the login_form to the top */
-    padding: 75px 75px 50px 50px;
+    flex-wrap: wrap;
+    align-items: flex-start;  
+    padding: 50px 0px 50px 0px;
     border-radius: 10px;
     width: 80vw;
     height: 60vh;
-    overflow: auto;
+    overflow-y: scroll;
+    gap: 30px;
+    justify-content: center; /* Change this from center to flex-start */
+    max-width: 100%;
+    scrollbar-width: none;
 }
 
 .dashboard-item {
     background-color: #403D39;
     width: 250px;
-    height: 300px;
+    height: 350px;
     border-radius: 10px;
     display: flex;
     justify-content:flex-start;
     flex-direction: column;
     color: white;
-    overflow: auto;
-    margin-left: 30px;
+    box-sizing: border-box;
+    margin: 0; /* Ensure no additional margin */
 }
 
+.dashboard-item .texts {
+    overflow: auto;
+
+}
+.dashboard-item form {
+    justify-self: flex-end;
+}
 .item-icon-image {
     width: 60px;
     height: 60px;
@@ -207,4 +223,48 @@ form select {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
+}
+.dashboard-search {
+    width: 80vw;
+    height: 50px;
+    border: #252422;
+}
+.dashboard-search form {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    background-color: #CCC5B9;
+    border-radius: 10px;
+    overflow: hidden; /* Prevents child elements from overflowing */
+    border: #252422;
+
+}
+.dashboard-search form #text-box {
+    display: flex;
+    align-items: center; /* Centers text vertically */
+    flex: 1;
+    height: 100%;
+    padding: 0 10px;
+    font-size: 1rem;
+    text-align: left;
+}
+.dashboard-search form #button {
+    width: 10%; /* Adjust width as needed */
+    height: 100%;
+    border: none;
+    background-color: #CCC5B9; /* Example button color */
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s ease;
+
+}
+.dashboard-search form #button:hover {
+    background-color: #403D39;
+
+}
+.force-newline {
+    flex-basis: 100%;
+    height: 0px;
 }

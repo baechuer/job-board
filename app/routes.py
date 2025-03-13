@@ -109,11 +109,17 @@ def register():
     page["title"] = "Register"
     return render_template('register.html', form=form, page=page)
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods = ['GET', 'POST'])
 @login_required
 def dashboard():
+    #Searching
+        
     page['title'] = 'Dashboard'
-    return render_template('dashboard.html', page=page)
+    if request.method == 'POST':
+        jobs = search_jobs(request.form.get("some_input"))
+    else:
+        jobs = get_all_jobs()
+    return render_template('dashboard.html', page=page, role=get_rolename(current_user.userrole), jobs=jobs)
 
 @app.route('/logout')
 @login_required
@@ -217,5 +223,24 @@ def reset_password(token):
         flash('Your password has been updated.')
         return redirect(url_for('login'))
     return render_template('reset_password.html', form=form, page=page)
+
+@login_required
+@app.route('/post_job', methods=['POST', 'GET'])
+def post_job():
+    if current_user.userrole == 2:
+        flash('You do not have access to post jobs.')
+        return redirect(url_for('dashboard'))
+    form = JobPostForm()
+    #Post Request
+    if form.validate_on_submit():
+        if get_posted_job(form.title.data, form.company.data, form.location.data) is not None:
+            flash("Already posted this job")
+            return redirect(url_for('post_job'))
+        to_post_job(form.title.data, form.description.data, form.company.data, form.location.data, form.salary.data)
+        flash("Successfully posted the job.")
+        return redirect(url_for('dashboard'))
+    #Get Request
+    page['title'] = 'Post Job'
+    return render_template('post_job.html', page=page, form=form, role=get_rolename(current_user.userrole))
 
 

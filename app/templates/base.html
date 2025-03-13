@@ -17,6 +17,11 @@
                 {% if request.path != '/' %}
                     {% if session.logged_in %}
                         <a href="{{ url_for('dashboard') }}">Home</a>
+                        {% if role != 'USER' %}
+                            {% if request.path == '/dashboard' %}
+                                <a href="{{ url_for('post_job') }}">Post Job</a>
+                            {% endif %}
+                        {% endif %}
                     {% else %}
                         <a href="{{ url_for('index') }}">Home</a>
                     {% endif %}

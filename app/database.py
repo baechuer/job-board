@@ -18,6 +18,11 @@ def drop_all(app):
 
 ### User functions
 # Create User
+def get_rolename(userrole):
+    for role in Roles:
+        if userrole == role.value:
+            return role.name
+
 def create_user(username, password, userrole, email):
     if get_user_by_username('admin') is not None and userrole == 1:
         return False
@@ -61,3 +66,18 @@ def update_userrole(username, userrole):
 def get_all_users():
     """Get all users."""
     return User.query.all()
+
+def get_posted_job(title, company, location):
+    return Job.query.filter_by(title=title, company=company, location=location).first()
+
+def to_post_job(title, description, company, location, salary):
+    job = Job(title=title, description=description, company=company, location=location, salary=salary)
+    db.session.add(job)
+    db.session.commit()
+
+def get_all_jobs():
+    return Job.query.all()
+
+def search_jobs(search):
+    search_term = f"%{search}%"
+    return Job.query.filter(Job.title.like(search_term)).all()

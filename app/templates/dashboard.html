@@ -2,38 +2,34 @@
 {% block content %}
     <h1>Dashboard</h1>
     <div class="dash-container">
-        <div class="dashboard-container">
-            <div class="dashboard-search">
-            </div>
-            <div class="dashboard-item">
-                <div class="item-top">
-                    <img src="{{ url_for('static', filename='images/a cute panda.png') }}" alt="icon" class="item-icon-image">
-                    <h3>Job Title</h3>
-                </div>
-                <div>
-                    <p class="dashboard-item-text">Some description fo the job</p>
-                    <p>Some location display here</p>
-                    <p>Time stamp</p>
-                </div>
-                <form>
-                    <input type="submit" value="Apply">
-                </form>
-            </div>
-            <div class="dashboard-item">
-                <div class="item-top">
-                    <img src="{{ url_for('static', filename='images/a cute panda.png') }}" alt="icon" class="item-icon-image">
-                    <h3>Job Title</h3>
-                </div>
-                <div>
-                    <p class="dashboard-item-text">Some description fo the job</p>
-                    <p>Some location display here</p>
-                    <p>Time stamp</p>
-                </div>
-                <form>
-                    <input type="submit" value="Apply">
-                </form>
-            </div>
+        <div class="dashboard-search">
+            <form action="{{ url_for('dashboard') }}", method="POST">
+                <input type="text" id="text-box" name="some_input" placeholder="Enter to search job">
+                <input type="submit" id="button" value="Submit">
+            </form>
         </div>
+            <div class="force-newline">
+            </div>
+            <div class="dashboard-container">
+                {% for job in jobs%}
+                    <div class="dashboard-item">
+                        <div class="item-top">
+                            <img src="{{ url_for('static', filename='images/a cute panda.png') }}" alt="icon" class="item-icon-image">
+                            <h3>{{ job.title }}</h3>
+                        </div>
+                        <div class="texts">
+                            <p>Company: {{ job.company }}</p>
+                            <p>Description: {{ job.description }}</p>
+                            <p>Location: {{ job.location }}</p>
+                            <p> Some date </p>
+                        </div>
+                        <form>
+                            <input type="submit" value="Apply">
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+
     </div>
 
 {% endblock %}
