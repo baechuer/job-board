@@ -76,8 +76,12 @@ def to_post_job(title, description, company, location, salary):
     db.session.commit()
 
 def get_all_jobs():
-    return Job.query.all()
+    return Job.query.order_by(Job.post_time.desc()).all()
 
-def search_jobs(search):
+def search_jobs(search_field, search):
+    if search_field not in ['title', 'description', 'company', 'location']:
+        raise ValueError("Invalid search")
+    
+    column = getattr(Job, search_field)
     search_term = f"%{search}%"
-    return Job.query.filter(Job.title.like(search_term)).all()
+    return Job.query.filter(column.ilike(search_term)).order_by(Job.post_time.desc()).all()

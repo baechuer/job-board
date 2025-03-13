@@ -1,8 +1,8 @@
 from enum import Enum
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from datetime import datetime
 db = SQLAlchemy()
-
 class Roles(Enum):
     ADMIN = 1
     USER = 2
@@ -40,7 +40,7 @@ class Job(db.Model):
     company = db.Column(db.String(40), nullable = False)
     location = db.Column(db.String(60), nullable = False)
     salary = db.Column(db.Numeric(precision=20, scale=2), nullable = False)
-
+    post_time = db.Column(db.DateTime, default=datetime.now())
     __table_args__ = (
         db.UniqueConstraint('title', 'company', 'location'),
     )

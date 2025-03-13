@@ -55,6 +55,18 @@ def create_default_user():
         )
         db.session.add(default_user)
         db.session.commit()
+
+        default_job = Job(
+            title = "Software Engineer",
+            description = "This is some description",
+            company = "Some Company",
+            location = "Some location",
+            salary = 100000.0,
+            post_time = datetime(2024, 1, 1, 10, 30, 0)
+        )
+        db.session.add(default_job)
+        db.session.commit()
+
     else:
         print("ℹ️ Default admin user already exists.")
 with app.app_context():
@@ -113,13 +125,18 @@ def register():
 @login_required
 def dashboard():
     #Searching
-        
+    
+    reference_time = datetime.now()  # Current time as reference
     page['title'] = 'Dashboard'
     if request.method == 'POST':
-        jobs = search_jobs(request.form.get("some_input"))
+        try:
+            jobs = search_jobs(request.form.get("search-field"), request.form.get("some_input"))
+        except:
+            flash("Invalid search term")
+            redirect(url_for("dashboard"))
     else:
         jobs = get_all_jobs()
-    return render_template('dashboard.html', page=page, role=get_rolename(current_user.userrole), jobs=jobs)
+    return render_template('dashboard.html', page=page, role=get_rolename(current_user.userrole), jobs=jobs, reference_time=reference_time)
 
 @app.route('/logout')
 @login_required
