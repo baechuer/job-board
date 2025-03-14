@@ -1,5 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, DecimalField
+from flask_wtf.file import FileField, FileRequired
+from werkzeug.utils import secure_filename
+
 from wtforms.validators import DataRequired, Length
 from decimal import ROUND_HALF_UP
 class LoginForm(FlaskForm):
@@ -28,3 +31,10 @@ class JobPostForm(FlaskForm):
     location = StringField("Location", validators=[DataRequired(), Length(max=60)])
     salary = DecimalField(places=2, rounding=ROUND_HALF_UP, validators=[DataRequired()])
     submit = SubmitField("Post Job")
+
+class JobApplyForm(FlaskForm):
+    firstname = StringField("Firstname", validators=[DataRequired(), Length(max=40)])
+    lastname = StringField("Lastname", validators=[DataRequired(), Length(max=40)])
+    email = StringField("Email", validators=[DataRequired(), Length(max=40)])
+    resume = FileField('Upload Resume', validators=[FileRequired()])
+    submit = SubmitField("Submit Application")

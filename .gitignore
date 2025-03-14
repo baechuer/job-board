@@ -50,3 +50,5 @@ config.py
 settings.py
 secrets.json
 environ.sh
+static/resumes/*
+!static/resumes/.gitkeep

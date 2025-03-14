@@ -35,6 +35,7 @@ class User(db.Model, UserMixin):
 class Job(db.Model):
     __tablename__ = 'Job'
     id = db.Column(db.Integer, primary_key = True)
+    company_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
     title = db.Column(db.String(40), nullable = False)
     description = db.Column(db.String(500), nullable = False)
     company = db.Column(db.String(40), nullable = False)
@@ -45,16 +46,10 @@ class Job(db.Model):
         db.UniqueConstraint('title', 'company', 'location'),
     )
 
-class Application(db.Model):
-    title = db.Column(db.String(40), nullable = False)
-    company = db.Column(db.String(40), nullable = False)
-    location = db.Column(db.String(60), nullable = False)
+class JobApplication(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    job_id = db.Column(db.Integer, db.ForeignKey('Job.id'), nullable = False)
     username = db.Column(db.String(80), unique = True, nullable = False)
+    resume_filename = db.Column(db.String(200), nullable=False)
     status = db.Column(db.Integer, nullable = False)
-    __table_args__ = (
-        db.PrimaryKeyConstraint('title', 'company', 'location', 'username'),
-        db.ForeignKeyConstraint(
-            ['title', 'company', 'location'],
-            ['Job.title', 'Job.company', 'Job.location']
-        )
-    )
+    apply_date = db.Column(db.DateTime, default=datetime.now())

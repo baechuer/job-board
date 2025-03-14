@@ -70,8 +70,8 @@ def get_all_users():
 def get_posted_job(title, company, location):
     return Job.query.filter_by(title=title, company=company, location=location).first()
 
-def to_post_job(title, description, company, location, salary):
-    job = Job(title=title, description=description, company=company, location=location, salary=salary)
+def to_post_job(title, description, company, location, salary, company_id):
+    job = Job(title=title, description=description, company=company, location=location, salary=salary, company_id=company_id)
     db.session.add(job)
     db.session.commit()
 
@@ -85,3 +85,5 @@ def search_jobs(search_field, search):
     column = getattr(Job, search_field)
     search_term = f"%{search}%"
     return Job.query.filter(column.ilike(search_term)).order_by(Job.post_time.desc()).all()
+def get_job_byid(id):
+    return Job.query.filter_by(id=id).first()

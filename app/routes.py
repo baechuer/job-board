@@ -37,23 +37,23 @@ def create_default_user():
         )
         db.session.add(default_user)
 
-        default_user = User(
+        default_user1 = User(
             username='abc',
             password=generate_password_hash('abc'),
             userrole=2,
             email="someemail1@email.com",
             verified=True       
         )
-        db.session.add(default_user)
+        db.session.add(default_user1)
 
-        default_user = User(
+        default_user1 = User(
             username='firm',
             password=generate_password_hash('firm'),
             userrole=3,
             email="someemail2@email.com",
             verified=True       
         )
-        db.session.add(default_user)
+        db.session.add(default_user1)
         db.session.commit()
 
         default_job = Job(
@@ -62,7 +62,8 @@ def create_default_user():
             company = "Some Company",
             location = "Some location",
             salary = 100000.0,
-            post_time = datetime(2024, 1, 1, 10, 30, 0)
+            post_time = datetime(2024, 1, 1, 10, 30, 0),
+            company_id = default_user.id
         )
         db.session.add(default_job)
         db.session.commit()
@@ -253,11 +254,31 @@ def post_job():
         if get_posted_job(form.title.data, form.company.data, form.location.data) is not None:
             flash("Already posted this job")
             return redirect(url_for('post_job'))
-        to_post_job(form.title.data, form.description.data, form.company.data, form.location.data, form.salary.data)
+        to_post_job(form.title.data, form.description.data, form.company.data, form.location.data, form.salary.data, current_user.id)
         flash("Successfully posted the job.")
         return redirect(url_for('dashboard'))
     #Get Request
     page['title'] = 'Post Job'
     return render_template('post_job.html', page=page, form=form, role=get_rolename(current_user.userrole))
 
+@login_required
+@app.route('/apply_job/<int:job_id>', methods = ['POST', 'GET'])
+def apply_job(job_id):
+    page['title'] = 'apply_job'
+    form = JobApplyForm()
+
+    job = get_job_byid(job_id)
+    if job is None:
+        flash("Job does not exists")
+        return redirect(url_for('dashboard'))
+    if form.validate_on_submit():
+        file = form.resume.data
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            print(filename, ' helloworld ', app.config['UPLOAD_FOLDER'])
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)  # Save the file to the specified directory
+            flash("Your application has been submitted successfully.")
+            return redirect(url_for("dashboard"))
+    return render_template('apply_job.html', page=page, form=form)
 

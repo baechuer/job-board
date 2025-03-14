@@ -44,7 +44,7 @@
                             </p>
                             <p>Salary: ${{ job.salary }}</p>
                         </div>
-                        <form>
+                        <form action="{{ url_for('apply_job', job_id=job.id) }}">
                             <input type="submit" value="Apply">
                         </form>
                     </div>

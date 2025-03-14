@@ -1,6 +1,9 @@
 import secrets
 import string
 from itsdangerous import URLSafeTimedSerializer
+import os
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+
 def get_salt():
     # Generate a random token of 4 bytes
     token = secrets.token_bytes(4)
@@ -18,3 +21,6 @@ def verify_token(token, serialiser):
         return email
     except:
         return None
+    
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
