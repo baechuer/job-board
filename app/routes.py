@@ -271,14 +271,42 @@ def apply_job(job_id):
     if job is None:
         flash("Job does not exists")
         return redirect(url_for('dashboard'))
+    elif current_user.userrole == 3:
+        flash("Employers are not permitted to apply for job")
+        return redirect(url_for('dashboard'))
+
     if form.validate_on_submit():
         file = form.resume.data
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print(filename, ' helloworld ', app.config['UPLOAD_FOLDER'])
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)  # Save the file to the specified directory
+            create_job_application(job_id, current_user.username, filepath)
+
             flash("Your application has been submitted successfully.")
             return redirect(url_for("dashboard"))
     return render_template('apply_job.html', page=page, form=form)
 
+@login_required
+@app.route('/view_posted_job', methods = ['POST', 'GET'])
+def view_posted_job():
+    if current_user.userrole == 2:
+        flash("You are not permitted to post or view your posted jobs")
+        return redirect(url_for('dashboard'))
+    page['title'] = 'View Posted job'
+    
+    reference_time = datetime.now()  # Current time as reference
+    if request.method == 'POST':
+        try:
+            jobs = search_user_jobs(request.form.get("search-field"), request.form.get("some_input"), current_user.id)
+        except:
+            flash("Invalid search term")
+            redirect(url_for("dashboard"))
+    else:
+        jobs = get_posted_job_byuser(current_user.id)
+    return render_template("view_posted_job.html", page=page, jobs=jobs, reference_time=reference_time)
+
+@login_required
+@app.route('/view_job/<int:job_id>', methods = ['POST', 'GET'])
+def view_job(job_id):
+    pass

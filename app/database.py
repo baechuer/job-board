@@ -85,5 +85,26 @@ def search_jobs(search_field, search):
     column = getattr(Job, search_field)
     search_term = f"%{search}%"
     return Job.query.filter(column.ilike(search_term)).order_by(Job.post_time.desc()).all()
+
+def search_user_jobs(search_field, search, company_id):
+    if search_field not in ['title', 'description', 'company', 'location']:
+        raise ValueError("Invalid search")
+    
+    column = getattr(Job, search_field)
+    search_term = f"%{search}%"
+    return Job.query.filter(column.ilike(search_term), Job.company_id == company_id).order_by(Job.post_time.desc()).all()
+
 def get_job_byid(id):
     return Job.query.filter_by(id=id).first()
+
+def create_job_application(job_id, username, filepath):
+    job_application = JobApplication(
+        job_id=job_id,
+        username=username,
+        resume_filename=filepath
+    )
+    db.session.add(job_application)
+    db.session.commit()
+
+def get_posted_job_byuser(user_id):
+    return Job.query.filter_by(company_id=user_id)

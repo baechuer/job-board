@@ -49,7 +49,7 @@ class Job(db.Model):
 class JobApplication(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     job_id = db.Column(db.Integer, db.ForeignKey('Job.id'), nullable = False)
-    username = db.Column(db.String(80), unique = True, nullable = False)
+    username = db.Column(db.String(80), db.ForeignKey('user.username'), unique = True, nullable = False)
     resume_filename = db.Column(db.String(200), nullable=False)
-    status = db.Column(db.Integer, nullable = False)
+    status = db.Column(db.Integer, default=1)
     apply_date = db.Column(db.DateTime, default=datetime.now())

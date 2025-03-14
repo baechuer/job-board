@@ -20,6 +20,7 @@
                         {% if role != 'USER' %}
                             {% if request.path == '/dashboard' %}
                                 <a href="{{ url_for('post_job') }}">Post Job</a>
+                                <a href="{{ url_for('view_posted_job') }}">Your Posted Job</a>
                             {% endif %}
                         {% endif %}
                     {% else %}
