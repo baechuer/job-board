@@ -57,15 +57,26 @@ def create_default_user():
         db.session.commit()
 
         default_job = Job(
+            id = 1,
             title = "Software Engineer",
             description = "This is some description",
             company = "Some Company",
             location = "Some location",
             salary = 100000.0,
             post_time = datetime(2024, 1, 1, 10, 30, 0),
-            company_id = default_user.id
+            company_id = default_user.id,
+
         )
         db.session.add(default_job)
+
+        default_application = JobApplication(
+            job_id=default_job.id,
+            username = 'abc',
+            resume_filename = "D:\myplayground\self-project\flask-framework\job-board\app\static\resumes\Payment_information_S345444665.pdf",
+            firstname = 'ABC',
+            lastname = 'ABC'
+        )
+        db.session.add(default_application)
         db.session.commit()
 
     else:
@@ -281,7 +292,7 @@ def apply_job(job_id):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)  # Save the file to the specified directory
-            create_job_application(job_id, current_user.username, filepath)
+            create_job_application(job_id, current_user.username, form.firstname.data, form.lastname.data, filepath)
 
             flash("Your application has been submitted successfully.")
             return redirect(url_for("dashboard"))
@@ -309,4 +320,15 @@ def view_posted_job():
 @login_required
 @app.route('/view_job/<int:job_id>', methods = ['POST', 'GET'])
 def view_job(job_id):
-    pass
+    page['title'] = 'Applications'
+    if request.method == 'POST':
+        try:
+            applications = search_applications(job_id, request.form.get("search-field"), request.form.get("some_input"))
+        except:
+            flash("Invalid search term")
+            redirect(url_for("dashboard"))
+    else:
+        applications = get_applications_by_job_id(job_id)
+    reference_time = datetime.now()  # Current time as reference
+        
+    return render_template("view_job.html", page=page, applications=applications, job_id=job_id, reference_time=reference_time)

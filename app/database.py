@@ -108,3 +108,25 @@ def create_job_application(job_id, username, filepath):
 
 def get_posted_job_byuser(user_id):
     return Job.query.filter_by(company_id=user_id)
+
+def get_applications_by_job_id(job_id):
+    awaiting = JobApplication.query.filter_by(job_id=job_id, status=1).order_by(JobApplication.apply_date.desc()).all()
+    approved = JobApplication.query.filter_by(job_id=job_id, status=2).order_by(JobApplication.apply_date.desc()).all()
+    rejected = JobApplication.query.filter_by(job_id=job_id, status=3).order_by(JobApplication.apply_date.desc()).all()
+    return awaiting + approved + rejected
+
+def search_applications(job_id, search_field, search):
+    all_search_fields = ['all', 'await', 'approved', 'rejected']
+    if search_field not in all_search_fields:
+        raise ValueError("Invalid search")
+    search_term = search.split(" ")
+    if search_field == 'all':
+        if len(search_term) == 1:
+            return JobApplication.query.filter(JobApplication.job_id == job_id, JobApplication.firstname.like(f"%{search_term[0]}%")).order_by(JobApplication.apply_date.desc()).all()
+        else:
+            return JobApplication.query.filter(JobApplication.job_id == job_id, JobApplication.firstname.like(f"%{search_term[0]}%"), JobApplication.lastname.like(f"%{search_term[1]}%")).order_by(JobApplication.apply_date.desc()).all()
+    else:
+        if len(search_term) == 1:
+            return JobApplication.query.filter(JobApplication.job_id == job_id, JobApplication.firstname.like(f"%{search_term[0]}%"), JobApplication.status == all_search_fields.index(search_field)).order_by(JobApplication.apply_date.desc()).all()
+        else:
+            return JobApplication.query.filter(JobApplication.job_id == job_id, JobApplication.firstname.like(f"%{search_term[0]}%"), JobApplication.lastname.like(f"%{search_term[1]}%"), JobApplication.status == all_search_fields.index(search_field)).order_by(JobApplication.apply_date.desc()).all()

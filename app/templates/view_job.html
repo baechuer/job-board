@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Applications</h1>
+
+    <div class="dash-container">
+        <div class="dashboard-search">
+            <form action="{{ url_for('view_job', job_id=job_id) }}", method="POST">
+                <select id="search-field" name="search-field">
+                    <option value="all">All</option>
+                    <option value="await">Awaiting</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <input type="text" id="text-box" name="some_input" placeholder="Enter candidate name to search candidate (use space to separate firstname and lastname)">
+                <input type="submit" id="button" value="Submit">
+            </form>
+        </div>
+            <div class="force-newline">
+            </div>
+            <div class="dashboard-container">
+                {% for application in applications %}
+                    <div class="dashboard-item">
+                        <div class="item-top">
+                            <img src="{{ url_for('static', filename='images/a cute panda.png') }}" alt="icon" class="item-icon-image">
+                            <h4>{{ application.firstname }} {{ application.lastname }}</h4>
+                        </div>
+                        <div class="texts">
+                            <p>
+                                Posted: 
+                                {% set delta = reference_time - application.apply_date %}
+                                {% if delta.days >= 365 %}
+                                    {{ delta.days // 365 }} year(s) ago
+                                {% elif delta.days >= 30 %}
+                                    {{ delta.days // 30 }} month(s) ago
+                                {% elif delta.days > 0 %}
+                                    {{ delta.days }} day(s) ago
+                                {% elif delta.seconds >= 3600 %}
+                                    {{ delta.seconds // 3600 }} hour(s) ago
+                                {% else %}
+                                    Just now
+                                {% endif %}
+                            </p>
+                        </div>
+                        <form>
+                            <input type="submit" value="Apply">
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+{% endblock %}

@@ -53,3 +53,5 @@ class JobApplication(db.Model):
     resume_filename = db.Column(db.String(200), nullable=False)
     status = db.Column(db.Integer, default=1)
     apply_date = db.Column(db.DateTime, default=datetime.now())
+    firstname = db.Column(db.String(40), nullable = False)
+    lastname = db.Column(db.String(40), nullable = False)
