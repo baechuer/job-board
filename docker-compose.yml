@@ -12,6 +12,8 @@ services:
       - FLASK_ENV=development
       - DB_URL=postgresql://postgres:postgres@flask_db:5432/postgres  # ✅ Fixed key
       - SECRET_KEY=sOmeSecreTKey1!
+      - UPLOAD_FOLDER='static/resumes'
+      - MAIL_SERVER='smtp.gmail.com'
     depends_on:
       - flask_db
 

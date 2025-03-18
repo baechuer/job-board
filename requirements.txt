@@ -4,3 +4,4 @@ Flask-SQLAlchemy
 pytest-postgresql
 flask_login
 flask_wtf
+flask_mail
