@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, make_response, redirect, url_for, flash, session
+from flask import request, jsonify, render_template, make_response, redirect, url_for, flash, session, send_from_directory
 from .database import *
 from .models import db, User
 import logging
@@ -72,7 +72,7 @@ def create_default_user():
         default_application = JobApplication(
             job_id=default_job.id,
             username = 'abc',
-            resume_filename = "D:\myplayground\self-project\flask-framework\job-board\app\static\resumes\Payment_information_S345444665.pdf",
+            resume_filename = "Payment_information_S345444665.pdf",
             firstname = 'ABC',
             lastname = 'ABC'
         )
@@ -292,7 +292,7 @@ def apply_job(job_id):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)  # Save the file to the specified directory
-            create_job_application(job_id, current_user.username, form.firstname.data, form.lastname.data, filepath)
+            create_job_application(job_id, current_user.username, form.firstname.data, form.lastname.data, filename)
 
             flash("Your application has been submitted successfully.")
             return redirect(url_for("dashboard"))
@@ -321,6 +321,10 @@ def view_posted_job():
 @app.route('/view_job/<int:job_id>', methods = ['POST', 'GET'])
 def view_job(job_id):
     page['title'] = 'Applications'
+    if validate_user_view_job(job_id, current_user) != True:
+        flash("You have no permit to view other's work")
+        return redirect(url_for("dashboard"))
+
     if request.method == 'POST':
         try:
             applications = search_applications(job_id, request.form.get("search-field"), request.form.get("some_input"))
@@ -330,5 +334,46 @@ def view_job(job_id):
     else:
         applications = get_applications_by_job_id(job_id)
     reference_time = datetime.now()  # Current time as reference
-        
     return render_template("view_job.html", page=page, applications=applications, job_id=job_id, reference_time=reference_time)
+
+@login_required
+@app.route('/view_application/<int:application_id>', methods = ['POST', 'GET'])
+def view_application(application_id):
+
+    
+    page['title'] = 'View Application'
+    return render_template('view_application.html', page=page, application_id=application_id)
+
+@login_required
+@app.route('/api/get_filename/<int:application_id>')
+def get_filename(application_id):
+    application = get_applications_by_application_id(application_id)
+    return jsonify({"filename": application.resume_filename})
+
+@login_required
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
+
+@login_required
+@app.route('/view/<filename>')
+def view_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)  # Ensure "uploads" is your file directory
+
+@login_required
+@app.route('/handle_application/<int:application_id>', methods=['POST'])
+def handle_application(application_id):
+    data = request.get_json()
+    action = data.get('action')
+    response_to_application(application_id, action)
+    if action == 'approve':
+        return jsonify({'status': "APPROVED"})
+    elif action == 'reject':
+        return jsonify({'status': "REJECTED"})
+    else:
+        return jsonify({"message": "Invalid action"}), 400    
+@login_required
+@app.route('/get_application_status/<int:application_id>', methods=['GET'])
+def get_application_status(application_id):
+    appli = get_applications_by_application_id(application_id)
+    return jsonify({"status": Status(appli.status).name})

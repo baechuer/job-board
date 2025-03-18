@@ -115,6 +115,9 @@ def get_applications_by_job_id(job_id):
     rejected = JobApplication.query.filter_by(job_id=job_id, status=3).order_by(JobApplication.apply_date.desc()).all()
     return awaiting + approved + rejected
 
+def get_applications_by_application_id(application_id):
+    return JobApplication.query.filter_by(id=application_id).first()
+
 def search_applications(job_id, search_field, search):
     all_search_fields = ['all', 'await', 'approved', 'rejected']
     if search_field not in all_search_fields:
@@ -130,3 +133,17 @@ def search_applications(job_id, search_field, search):
             return JobApplication.query.filter(JobApplication.job_id == job_id, JobApplication.firstname.like(f"%{search_term[0]}%"), JobApplication.status == all_search_fields.index(search_field)).order_by(JobApplication.apply_date.desc()).all()
         else:
             return JobApplication.query.filter(JobApplication.job_id == job_id, JobApplication.firstname.like(f"%{search_term[0]}%"), JobApplication.lastname.like(f"%{search_term[1]}%"), JobApplication.status == all_search_fields.index(search_field)).order_by(JobApplication.apply_date.desc()).all()
+def validate_user_view_job(job_id, current_user):
+    job = Job.query.filter_by(id=job_id).first()
+    if job.company_id != current_user.id:
+        return False
+    return True
+
+def response_to_application(application_id, action):
+    application = get_applications_by_application_id(application_id)
+    if action == 'approve':
+        application.status = 2
+    elif action == 'reject':
+        application.status = 3
+    db.session.add(application)
+    db.session.commit()
