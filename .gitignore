@@ -19,11 +19,31 @@ venv/
 *.sql.gz
 pgdata/
 
+# Ignore SQLite databases
+*.sqlite
+*.sqlite3
+app.db
+*.db
+
 # Ignore Flask instance, migrations, and logs
 instance/
 migrations/
 logs/
 *.log
+
+# Coverage and test artifacts
+.coverage
+coverage.xml
+htmlcov/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Python version files
+.python-version
+
 
 # Ignore IDE and Editor files
 .vscode/

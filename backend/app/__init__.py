@@ -1,8 +1,9 @@
 from flask import Flask
-from .extensions import db, migrate, jwt, bcrypt
+from .extensions import db, migrate, jwt, bcrypt, mail
 from flask_jwt_extended import JWTManager
 from sqlalchemy import select
 from .models.user import User
+from .models.revoked_token import RevokedToken
 from .config.development import DevConfig
 from .api import register_api
 from .common.errors import register_error_handlers
@@ -20,15 +21,26 @@ def create_app(config_object=DevConfig) -> Flask:
     migrate.init_app(app, db)
     jwt.init_app(app)
     bcrypt.init_app(app)
+    mail.init_app(app)
 
-    # Enforce per-user token_version without external storage
+    # Enforce per-token revocation (per-device logout) and last_logout_at fallback
     @jwt.token_in_blocklist_loader
     def check_token_iat(jwt_header, jwt_payload):
         user_id = jwt_payload.get("sub")
         token_iat = jwt_payload.get("iat")
-        if not user_id or not token_iat:
+        jti = jwt_payload.get("jti")
+        if not user_id or not token_iat or not jti:
             return True
         try:
+            # Check per-token revocation
+            revoked = db.session.get(RevokedToken, jti)
+            if revoked:
+                # Opportunistic cleanup if expired
+                if revoked.is_expired():
+                    db.session.delete(revoked)
+                    db.session.commit()
+                else:
+                    return True
             user = db.session.execute(select(User).where(User.id == int(user_id))).scalar_one_or_none()
             if user is None:
                 return True

@@ -19,6 +19,13 @@ class TestConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = "test-secret"
     BCRYPT_LOG_ROUNDS = 4
+    SECRET_KEY = "test-secret"
+    MAIL_SERVER = "localhost"
+    MAIL_PORT = 25
+    MAIL_USE_TLS = False
+    MAIL_USERNAME = ""
+    MAIL_PASSWORD = ""
+    MAIL_DEFAULT_SENDER = "test@example.com"
 
 
 @pytest.fixture(scope="session")

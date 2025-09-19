@@ -76,7 +76,7 @@ def test_refresh_flow_success(client):
     assert res_me.get_json()["user"]["email"] == "refresh@example.com"
 
 
-def test_logout_all_invalidates_old_tokens_and_refresh(client):
+def test_logout_invalidates_only_current_device_and_refresh(client):
     # Register and login
     client.post(
         "/api/auth/register",
@@ -94,23 +94,35 @@ def test_logout_all_invalidates_old_tokens_and_refresh(client):
     # Ensure logout timestamp is strictly after token iat (second-level resolution)
     import time
     time.sleep(1)
-    # logout_all should set last_logout_at so old tokens are rejected
-    res_logout_all = client.post(
-        "/api/auth/logout_all",
+    # logout should revoke only the current access token
+    res_logout = client.post(
+        "/api/auth/logout",
         headers={"Authorization": f"Bearer {access}"},
     )
-    assert res_logout_all.status_code == 200
+    assert res_logout.status_code == 200
 
-    # Old access should now fail on /me
+    # Old access should now fail on /me (revoked by JTI)
     res_me_old = client.get("/api/auth/me", headers={"Authorization": f"Bearer {access}"})
     assert res_me_old.status_code == 401
 
-    # Old refresh should also fail to mint a new access token
+    # Old refresh should still work unless revoked explicitly
     res_refresh_old = client.post(
         "/api/auth/refresh",
         headers={"Authorization": f"Bearer {refresh}"},
     )
-    assert res_refresh_old.status_code == 401
+    assert res_refresh_old.status_code == 200
+
+    # Now revoke the refresh token explicitly
+    res_logout_refresh = client.post(
+        "/api/auth/logout_refresh",
+        headers={"Authorization": f"Bearer {refresh}"},
+    )
+    assert res_logout_refresh.status_code == 200
+    res_refresh_after_revoke = client.post(
+        "/api/auth/refresh",
+        headers={"Authorization": f"Bearer {refresh}"},
+    )
+    assert res_refresh_after_revoke.status_code == 401
 
     # Login again to get fresh tokens
     res_login2 = client.post(
