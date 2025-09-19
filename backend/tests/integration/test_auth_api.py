@@ -145,3 +145,16 @@ def test_login_invalid_credentials(client):
     assert res.get_json()["error"] == "invalid credentials"
 
 
+
+def test_logout_without_token(client):
+    res = client.post("/api/auth/logout")
+    assert res.status_code == 401
+    body = res.get_json() or {}
+    assert "Missing" in (body.get("msg") or body.get("error") or "")
+
+
+def test_logout_refresh_without_token(client):
+    res = client.post("/api/auth/logout_refresh")
+    assert res.status_code == 401
+    body = res.get_json() or {}
+    assert "Missing" in (body.get("msg") or body.get("error") or "")

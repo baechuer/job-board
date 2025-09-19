@@ -35,6 +35,7 @@ logs/
 .coverage
 coverage.xml
 htmlcov/
+backend/reports/
 
 # Tool caches
 .mypy_cache/

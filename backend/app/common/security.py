@@ -24,3 +24,17 @@ def verify_email_token(token: str, max_age: int = 3600) -> str | None:
         return data.get("email")
     except Exception:
         return None
+
+
+def generate_reset_token(email: str) -> str:
+    s = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    return s.dumps({"email": email}, salt="password-reset")
+
+
+def verify_reset_token(token: str, max_age: int = 3600) -> str | None:
+    s = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    try:
+        data = s.loads(token, salt="password-reset", max_age=max_age)
+        return data.get("email")
+    except Exception:
+        return None

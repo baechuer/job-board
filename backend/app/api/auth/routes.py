@@ -7,18 +7,32 @@ from flask_jwt_extended import (
     get_jwt,
 )
 from . import auth_bp
-from ...services.auth_service import register_user, authenticate
+from ...services.auth_service import register_user, authenticate, reset_password as svc_reset_password
 from ...extensions import db, mail
 from ...models.user import User
 from sqlalchemy import select
-from ...schemas.auth_schema import RegisterSchema, LoginSchema
+from ...schemas.auth_schema import (
+    RegisterSchema,
+    LoginSchema,
+    ResetPasswordRequestSchema,
+    VerifyResetPasswordSchema,
+)
 from datetime import datetime, UTC
 from ...models.revoked_token import RevokedToken
-from ...common.security import generate_email_token, verify_email_token
+from ...common.security import (
+    generate_email_token,
+    verify_email_token,
+    generate_reset_token,
+    verify_reset_token,
+)
 from flask_mail import Message
+from marshmallow import ValidationError
 
 _register = RegisterSchema()
 _login = LoginSchema()
+_reset_req = ResetPasswordRequestSchema()
+_verify_reset = VerifyResetPasswordSchema()
+
 
 @auth_bp.post("/register")
 def register():
@@ -127,3 +141,50 @@ def logout():
     return jsonify(msg="logged out"), 200
 
 
+
+
+@auth_bp.post("/password/reset")
+def reset_password():
+    """Accepts email, sends a password reset link to that email if user exists."""
+    try:
+        data = _reset_req.load(request.get_json() or {})
+    except ValidationError as e:
+        return jsonify(error="invalid payload", details=e.messages), 400
+
+    email = data["email"].strip()
+    # Always respond 200 to avoid user enumeration, but only send mail if user exists
+    user = db.session.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    if user:
+        token = generate_reset_token(email)
+        reset_path = url_for("api.auth.verify_reset_password", _external=False)
+        # Frontend will submit token+new_password to verify_reset_password; include token in link for UX
+        link = f"{reset_path}?token={token}"
+        try:
+            msg = Message(
+                subject="Reset Your Password",
+                recipients=[email],
+                body=f"Reset your password using this link: {link}"
+            )
+            mail.send(msg)
+        except Exception:
+            pass
+    return jsonify(msg="if the email exists, a reset link has been sent"), 200
+
+
+@auth_bp.post("/password/reset/verify")
+def verify_reset_password():
+    """Validates reset token and sets a new password. Expects JSON: { token, new_password }."""
+    try:
+        data = _verify_reset.load(request.get_json() or {})
+    except ValidationError as e:
+        return jsonify(error="invalid payload", details=e.messages), 400
+
+    token = (data.get("token") or "").strip()
+    new_password = (data.get("new_password") or "").strip()
+
+    email = verify_reset_token(token)
+    if not email:
+        return jsonify(error="invalid or expired token"), 400
+
+    svc_reset_password(email, new_password)
+    return jsonify(msg="password updated"), 200

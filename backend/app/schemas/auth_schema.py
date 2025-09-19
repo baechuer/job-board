@@ -17,3 +17,21 @@ class RegisterSchema(Schema):
 class LoginSchema(Schema):
     email = fields.Email(required=True)
     password = fields.String(required=True)
+
+
+class ResetPasswordRequestSchema(Schema):
+    email = fields.Email(required=True)
+
+
+class VerifyResetPasswordSchema(Schema):
+    token = fields.String(required=True)
+    new_password = fields.String(required=True)
+    @validates_schema
+    def check_strength(self, data, **kwargs):
+        pw = data.get("new_password", "")
+        if not re.search(r'[A-Z]', pw):
+            raise ValidationError("Password must contain at least one uppercase letter", field_name="password")
+        if not re.search(r'[a-z]', pw):
+            raise ValidationError("Password must contain at least one lowercase letter", field_name="password")
+        if not re.search(r'\d', pw):
+            raise ValidationError("Password must contain at least one number", field_name="password")
