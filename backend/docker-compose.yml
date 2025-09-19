@@ -1,33 +1,31 @@
 version: "3.9"
 
 services:
-  flask_app:
-    container_name: flask_app
-    image: jz/flask_live:1.0.0
+  web:
     build: .
+    container_name: jobboard_web
     ports:
       - "4000:4000"
     environment:
-      - FLASK_APP=app.routes.py
+      - FLASK_APP=app.wsgi:app
       - FLASK_ENV=development
-      - DB_URL=postgresql://postgres:postgres@flask_db:5432/postgres  # ✅ Fixed key
-      - SECRET_KEY=sOmeSecreTKey1!
-      - UPLOAD_FOLDER='static/resumes'
-      - MAIL_SERVER='smtp.gmail.com'
+      - SECRET_KEY=change-me
+      - JWT_SECRET_KEY=change-me
+      - DATABASE_URL=postgresql+psycopg://postgres:postgres@db:5432/postgres
     depends_on:
-      - flask_db
+      - db
 
-  flask_db:
-    container_name: flask_db
+  db:
     image: postgres:12
-    ports:
-      - "5432:5432"
+    container_name: jobboard_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
 volumes:
-  pgdata: {}  # ✅ Fixed indentation and removed "-"
+  pgdata: {}
