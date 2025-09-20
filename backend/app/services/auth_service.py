@@ -4,6 +4,7 @@ from ..common.security import hash_password, check_password, sanitize_input
 from ..common.exceptions import ConflictError, ValidationError as CustomValidationError
 from sqlalchemy import select, exists
 from sqlalchemy.exc import IntegrityError
+from ..models.user_role import UserRole
 def register_user(email: str, password: str, username: str) -> User:
     email_n = email.strip().lower()
     username_n = username.strip()
@@ -25,6 +26,7 @@ def register_user(email: str, password: str, username: str) -> User:
         raise ConflictError("Username already registered")
 
     user = User(email=email_n, username=username_n, password_hash=hash_password(password))
+    user.roles.append(UserRole(role="candidate"))
     db.session.add(user)
     try:
         db.session.commit()
