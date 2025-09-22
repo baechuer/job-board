@@ -56,7 +56,8 @@ def register():
         # Do not fail registration if email backend is misconfigured; tests suppress send
         pass
 
-    return jsonify(id=user.id, email=user.email, verify_token=token), 201
+    # Do not expose verification token in API response for normal flow
+    return jsonify(id=user.id, email=user.email, message="verification email sent"), 201
 
 @auth_bp.post("/login")
 def login():

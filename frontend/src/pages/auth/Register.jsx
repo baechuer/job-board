@@ -43,12 +43,9 @@ const Register = () => {
       });
       
       if (result.success) {
-        const verifyToken = result?.data?.data?.verify_token || result?.data?.verify_token;
-        if (verifyToken) {
-          navigate(`/verify-email?token=${encodeURIComponent(verifyToken)}`);
-        } else {
-          navigate('/verify-email');
-        }
+        // Do not auto-verify. Notify user on the Login page.
+        try { localStorage.setItem('pendingVerificationEmail', formData.email.trim()); } catch {}
+        navigate('/login');
       } else {
         setError(result.error || 'Registration failed');
       }

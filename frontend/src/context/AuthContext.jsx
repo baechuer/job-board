@@ -37,10 +37,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
-      const { access_token } = response?.data || {};
+      const { access_token, refresh_token } = response?.data || {};
       
       localStorage.setItem('token', access_token);
       setToken(access_token);
+      if (refresh_token) {
+        try { localStorage.setItem('refresh_token', refresh_token); } catch {}
+      }
       
       const userData = await authService.getProfile();
       setUser(userData?.data?.user || userData.user);

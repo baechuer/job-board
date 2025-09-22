@@ -1,7 +1,9 @@
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -38,7 +40,7 @@ const AdminDashboard = () => {
         <div className="card">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            <button className="btn-primary w-full">
+            <button className="btn-primary w-full" onClick={() => navigate('/admin/recruiter-requests')}>
               Review Recruiter Requests
             </button>
             <button className="btn-secondary w-full">

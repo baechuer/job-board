@@ -30,19 +30,37 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Do not attempt refresh on auth endpoints themselves
+    const url = (originalRequest?.url || '').toString();
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/verify') || url.includes('/auth/reset');
+
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isAuthEndpoint) {
+        return Promise.reject(error);
+      }
       originalRequest._retry = true;
 
       try {
-        const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`);
-        const { access_token } = refreshResponse.data;
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) throw new Error('No refresh token');
+
+        const refreshResponse = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          null,
+          { headers: { Authorization: `Bearer ${refreshToken}` } }
+        );
+        const { access_token } = refreshResponse.data || {};
         
         localStorage.setItem('token', access_token);
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         
         return api(originalRequest);
       } catch (refreshError) {
-        // Do not force-redirect or clear token here; let UI handle auth state gracefully
+        // Clear bad tokens; let UI handle state gracefully
+        try {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
+        } catch {}
         return Promise.reject(refreshError);
       }
     }

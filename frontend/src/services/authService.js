@@ -17,7 +17,7 @@ export const authService = {
     api.post('/auth/logout'),
   
   verifyEmail: (token) => 
-    api.get(`/auth/verify-email?token=${token}`),
+    api.get(`/auth/verify?token=${encodeURIComponent(token)}`),
   
   requestPasswordReset: (email) => 
     api.post('/auth/request-password-reset', { email }),

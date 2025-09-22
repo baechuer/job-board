@@ -54,6 +54,20 @@ const Login = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
+          {/* Show hint after registration */}
+          {(() => {
+            try {
+              const pending = localStorage.getItem('pendingVerificationEmail');
+              if (pending) {
+                return (
+                  <div className="mt-4 text-sm text-primary-700 bg-primary-50 border border-primary-100 rounded p-3">
+                    We sent a verification link to <strong>{pending}</strong>. Please verify your email before logging in.
+                  </div>
+                );
+              }
+            } catch {}
+            return null;
+          })()}
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
             <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">

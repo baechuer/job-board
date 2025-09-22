@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { adminService } from '../../services/adminService';
 import Button from '../../components/common/Button';
 
 const RecruiterRequests = () => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -100,6 +102,9 @@ const RecruiterRequests = () => {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Reason (preview)
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Submitted
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -109,7 +114,7 @@ const RecruiterRequests = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {requests.map((request) => (
-                <tr key={request.id}>
+                <tr key={request.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/admin/recruiter-requests/${request.id}`)}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
@@ -128,6 +133,9 @@ const RecruiterRequests = () => {
                     }`}>
                       {request.status}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-sm truncate">
+                    {request.reason_preview || '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(request.submitted_at).toLocaleDateString()}

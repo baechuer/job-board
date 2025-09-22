@@ -10,6 +10,7 @@ import AdminDashboard from './pages/dashboard/AdminDashboard';
 import RecruiterDashboard from './pages/dashboard/RecruiterDashboard';
 import CandidateDashboard from './pages/dashboard/CandidateDashboard';
 import RecruiterRequests from './pages/admin/RecruiterRequests';
+import RecruiterRequestDetail from './pages/admin/RecruiterRequestDetail';
 import Profile from './pages/profile/Profile';
 import RecruiterRequest from './pages/RecruiterRequest';
 
@@ -34,6 +35,7 @@ function App() {
               <Route path="/dashboard/recruiter" element={<Layout><RecruiterDashboard /></Layout>} />
               <Route path="/dashboard/candidate" element={<Layout><CandidateDashboard /></Layout>} />
               <Route path="/admin/recruiter-requests" element={<Layout><RecruiterRequests /></Layout>} />
+              <Route path="/admin/recruiter-requests/:id" element={<Layout><RecruiterRequestDetail /></Layout>} />
               <Route path="/profile" element={<Layout><Profile /></Layout>} />
               <Route path="/recruiter-request" element={<Layout><RecruiterRequest /></Layout>} />
             </Routes>

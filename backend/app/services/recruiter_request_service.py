@@ -44,20 +44,29 @@ class RecruiterRequestService:
         ).first()
     
     def get_request_status(self, user_id: int) -> dict:
-        """Get current request status for user"""
-        # Get the most recent request that hasn't been actually deleted yet
-        request = RecruiterRequest.query.filter(
+        """Get current request status for user (only 'pending' counts as active)."""
+        # Look for a pending, non-deleted request first
+        pending = self.get_user_pending_request(user_id)
+        if pending:
+            return self.format_request_response(pending)
+
+        # If latest request exists but is approved/rejected, treat as no active request
+        latest = RecruiterRequest.query.filter(
             RecruiterRequest.user_id == user_id,
             or_(
                 RecruiterRequest.deleted_at.is_(None),
                 RecruiterRequest.deleted_at > datetime.now(UTC)
             )
         ).order_by(RecruiterRequest.submitted_at.desc()).first()
-        
-        if not request:
+
+        if not latest:
             return {"status": "no_request", "message": "No active request found"}
-        
-        return self.format_request_response(request)
+
+        if latest.status in ["approved", "rejected"]:
+            return {"status": "no_request", "message": "No active request found"}
+
+        # Fallback
+        return self.format_request_response(latest)
     
     def get_user_requests(self, user_id: int) -> list:
         """Get all requests for a user (including completed ones)"""
@@ -69,16 +78,30 @@ class RecruiterRequestService:
         return [self.format_request_response(req) for req in requests]
     
     def format_request_response(self, request: RecruiterRequest) -> dict:
-        """Format request response with all relevant information"""
+        """Format request response with all relevant information and user summary"""
+        # Attach a short preview of the reason and basic user info for admin listing
+        reason_preview = None
+        if request.reason:
+            preview = request.reason.strip().splitlines()[0]
+            reason_preview = (preview[:120] + '…') if len(preview) > 120 else preview
+
+        user = User.query.get(request.user_id)
+
         return {
             "id": request.id,
             "status": request.status,
             "reason": request.reason,
+            "reason_preview": reason_preview,
             "submitted_at": request.submitted_at.isoformat(),
             "reviewed_at": request.reviewed_at.isoformat() if request.reviewed_at else None,
             "feedback": request.feedback,
             "reapplication_guidance": request.reapplication_guidance,
-            "admin_notes": request.admin_notes if request.status in ['approved', 'rejected'] else None
+            "admin_notes": request.admin_notes if request.status in ['approved', 'rejected'] else None,
+            "user": {
+                "id": user.id if user else None,
+                "username": user.username if user else None,
+                "email": user.email if user else None,
+            },
         }
     
     def approve_request(self, request_id: int, admin_id: int, notes: str = None):
