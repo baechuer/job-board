@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from .extensions import db, migrate, jwt, bcrypt, mail
 from flask_jwt_extended import JWTManager
 from sqlalchemy import select
@@ -15,6 +16,15 @@ def create_app(config_object=DevConfig) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_object)
     app.config.from_pyfile("config.py", silent=True)  # instance/config.py (git-ignored)
+
+    # CORS: allow Vite dev server origin
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": ["http://localhost:5173"]}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization"],
+        expose_headers=["Content-Type", "Authorization"],
+    )
 
     # Bind extensions
     db.init_app(app)

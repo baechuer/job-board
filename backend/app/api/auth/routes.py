@@ -78,8 +78,18 @@ def login():
 @jwt_required()
 def me():
     claims = get_jwt()
-    user = {"id": get_jwt_identity(), "email": claims.get("email")}
-    return jsonify(user=user)
+    user_id = int(get_jwt_identity())
+    user = db.session.execute(select(User).where(User.id == user_id)).scalar_one()
+    roles = [{"role": r.role} for r in user.roles.all()]  # dynamic relationship
+    return jsonify(user={
+        "id": user.id,
+        "email": user.email,
+        "username": user.username,
+        "roles": roles,
+        "is_verified": user.is_verified,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "last_login": user.last_login.isoformat() if user.last_login else None,
+    })
 
 @auth_bp.post("/refresh")
 @jwt_required(refresh=True)
