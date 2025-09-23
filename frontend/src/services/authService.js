@@ -1,4 +1,5 @@
-import api from './api';
+import api, { API_BASE_URL } from './api';
+import axios from 'axios';
 
 export const authService = {
   login: (email, password) => 
@@ -13,15 +14,34 @@ export const authService = {
   getProfile: () => 
     api.get('/auth/me'),
   
-  logout: () => 
-    api.post('/auth/logout'),
+  logout: async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (_) {}
+
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        await axios.post(`${API_BASE_URL}/auth/logout_refresh`, null, {
+          headers: { Authorization: `Bearer ${refreshToken}` },
+          // Avoid api instance to prevent access-token header interception
+          validateStatus: () => true,
+        });
+      }
+    } catch (_) {}
+
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refresh_token');
+    } catch (_) {}
+  },
   
   verifyEmail: (token) => 
     api.get(`/auth/verify?token=${encodeURIComponent(token)}`),
   
   requestPasswordReset: (email) => 
-    api.post('/auth/request-password-reset', { email }),
+    api.post('/auth/password/reset', { email }),
   
-  resetPassword: (token, password) => 
-    api.post('/auth/reset-password', { token, password }),
+  resetPassword: (token, new_password) => 
+    api.post('/auth/password/reset/verify', { token, new_password }),
 };

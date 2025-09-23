@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance
 export const api = axios.create({
@@ -32,7 +32,13 @@ api.interceptors.response.use(
 
     // Do not attempt refresh on auth endpoints themselves
     const url = (originalRequest?.url || '').toString();
-    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/verify') || url.includes('/auth/reset');
+    const isAuthEndpoint = (
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/verify') ||
+      url.includes('/auth/password/reset') ||
+      url.includes('/auth/password/reset/verify')
+    );
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isAuthEndpoint) {

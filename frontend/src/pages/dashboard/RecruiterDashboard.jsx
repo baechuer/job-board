@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
@@ -38,9 +39,7 @@ const RecruiterDashboard = () => {
         <div className="card">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            <p className="text-gray-500 text-sm">
-              Job posting features coming soon...
-            </p>
+            <Link to="/recruiter/create-job" className="btn-primary inline-block">Post Job</Link>
           </div>
         </div>
 

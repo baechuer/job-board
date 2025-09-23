@@ -51,7 +51,20 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Login failed:', error);
-      const msg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Login failed';
+      // Prefer Marshmallow validation messages when present (422)
+      const messages = error?.response?.data?.messages || error?.response?.data?.details;
+      let msg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Login failed';
+      if (messages) {
+        try {
+          // Flatten messages object into a readable string
+          const parts = [];
+          Object.entries(messages).forEach(([field, errs]) => {
+            const arr = Array.isArray(errs) ? errs : [errs];
+            arr.forEach(e => parts.push(`${field}: ${e}`));
+          });
+          if (parts.length) msg = parts.join('\n');
+        } catch {}
+      }
       return { success: false, error: msg };
     }
   };
@@ -76,7 +89,7 @@ export const AuthProvider = ({ children }) => {
   const refreshToken = async () => {
     try {
       const response = await authService.refreshToken();
-      const { access_token } = response;
+      const { access_token } = response?.data || {};
       
       localStorage.setItem('token', access_token);
       setToken(access_token);

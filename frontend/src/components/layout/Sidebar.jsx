@@ -42,6 +42,19 @@ const Sidebar = () => {
             </Link>
           )}
 
+          {isRecruiter() && (
+            <Link
+              to="/recruiter/create-job"
+              className={`block px-3 py-2 rounded-lg ${
+                isActive('/recruiter/create-job') 
+                  ? 'bg-primary-100 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Post Job
+            </Link>
+          )}
+
           <Link
             to="/profile"
             className={`block px-3 py-2 rounded-lg ${

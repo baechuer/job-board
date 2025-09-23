@@ -42,8 +42,13 @@ def client(app):
     return app.test_client()
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def db(app):
-    return _db
+    # Ensure a clean database for each test
+    _db.session.remove()
+    _db.drop_all()
+    _db.create_all()
+    yield _db
+    _db.session.remove()
 
 
