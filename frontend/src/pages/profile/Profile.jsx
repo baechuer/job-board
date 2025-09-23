@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -40,7 +41,12 @@ const Profile = () => {
           </div>
         </div>
         <div className="mt-6">
-          <p className="text-gray-500 text-sm">Profile editing features coming soon...</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-gray-500 text-sm">Profile editing features coming soon...</p>
+            <Link to="/recruiter-request" className="btn-primary">
+              Request Recruiter Access
+            </Link>
+          </div>
         </div>
       </div>
     </div>

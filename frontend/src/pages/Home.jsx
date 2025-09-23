@@ -29,6 +29,9 @@ const Home = () => {
             <Link to={`/dashboard/${user.roles?.[0]?.role || 'candidate'}`} className="btn-primary text-lg px-8 py-3">
               Go to Dashboard
             </Link>
+            <Link to="/jobs" className="btn-secondary text-lg px-8 py-3">
+              Browse Jobs
+            </Link>
           </div>
         )}
       </div>

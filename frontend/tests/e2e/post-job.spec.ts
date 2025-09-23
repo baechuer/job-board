@@ -47,11 +47,10 @@ test('recruiter can post a job with extended fields', async ({ page }) => {
 
   await page.getByRole('button', { name: /post job/i }).click();
 
-  // Debug: capture response body for create-job call
-  const resp = await page.waitForResponse(r => r.url().includes('/recruiter/create-job') && r.request().method() === 'POST');
-  const body = await resp.json().catch(() => ({}));
-  // Expect success
-  expect({ status: resp.status(), body }).toEqual(expect.objectContaining({ status: 201 }));
+  // After success, go to My Jobs and ensure the new job is present
+  await page.goto('http://localhost:5173/recruiter/my-jobs');
+  await page.getByRole('heading', { name: /my jobs/i }).waitFor({ state: 'visible' });
+  await expect(page.getByText('QA Engineer')).toBeVisible();
 });
 
 

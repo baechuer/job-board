@@ -50,9 +50,9 @@ it('shows backend error', async () => {
   api.post.mockRejectedValue({ response: { data: { error: 'conflict' } } });
   renderPage();
 
-  // Fill minimal required fields so native validation doesn't block submit
-  fireEvent.change(screen.getByLabelText(/^Title$/i), { target: { value: 'T' } });
-  fireEvent.change(screen.getByLabelText(/^Description$/i), { target: { value: 'D'.repeat(10) } });
+  // Fill fields to pass client-side validation
+  fireEvent.change(screen.getByLabelText(/^Title$/i), { target: { value: 'Valid Title' } });
+  fireEvent.change(screen.getByLabelText(/^Description$/i), { target: { value: 'Valid description text' } });
   fireEvent.change(screen.getByLabelText(/Salary Min/i), { target: { value: '1' } });
   fireEvent.change(screen.getByLabelText(/Salary Max/i), { target: { value: '2' } });
   fireEvent.change(screen.getByLabelText(/^Location$/i), { target: { value: 'L' } });

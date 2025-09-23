@@ -8,6 +8,7 @@ const CreateJob = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -42,6 +43,7 @@ const CreateJob = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
     setLoading(true);
     try {
       const payload = {
@@ -62,13 +64,40 @@ const CreateJob = () => {
         nice_to_haves: form.nice_to_haves.trim(),
         about_team: form.about_team.trim(),
       };
+
+      // Client-side validation mirroring backend
+      const errors = {};
+      if (payload.title.length < 3) errors.title = 'Title must be at least 3 characters';
+      if (payload.description.length < 10) errors.description = 'Description must be at least 10 characters';
+      if (!Number.isFinite(payload.salary_min)) errors.salary_min = 'Enter a valid number';
+      if (!Number.isFinite(payload.salary_max)) errors.salary_max = 'Enter a valid number';
+      if (Number.isFinite(payload.salary_min) && Number.isFinite(payload.salary_max) && payload.salary_min > payload.salary_max) {
+        errors.salary_max = 'Max must be greater than or equal to Min';
+      }
+      if (!payload.location) errors.location = 'Location is required';
+      if (!payload.requirements.length) errors.requirements = 'Provide at least one requirement';
+      if (!payload.responsibilities) errors.responsibilities = 'Responsibilities are required';
+      if (!payload.skills.length) errors.skills = 'Provide at least one skill';
+      if (!payload.application_deadline) errors.application_deadline = 'Application deadline is required (YYYY-MM-DD)';
+
+      if (Object.keys(errors).length) {
+        setFieldErrors(errors);
+        setLoading(false);
+        return;
+      }
       const res = await api.post('/recruiter/create-job', payload);
       if (res?.status === 201) {
         navigate('/dashboard/recruiter');
       }
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.response?.data?.message || 'Failed to create job';
-      setError(msg);
+      const details = err?.response?.data?.details;
+      if (details && typeof details === 'object') {
+        setFieldErrors(details);
+        setError('Please correct the highlighted fields.');
+      } else {
+        const msg = err?.response?.data?.error || err?.response?.data?.message || 'Failed to create job';
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -79,7 +108,9 @@ const CreateJob = () => {
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Post Job</h1>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <Input label="Title" name="title" value={form.title} onChange={handleChange} required />
+        {fieldErrors.title && <div className="text-red-600 text-sm">{fieldErrors.title}</div>}
         <Input label="Description" name="description" value={form.description} onChange={handleChange} required />
+        {fieldErrors.description && <div className="text-red-600 text-sm">{fieldErrors.description}</div>}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label htmlFor="employment_type" className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
@@ -112,12 +143,18 @@ const CreateJob = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="Salary Min" name="salary_min" type="number" value={form.salary_min} onChange={handleChange} required />
+          {fieldErrors.salary_min && <div className="text-red-600 text-sm">{fieldErrors.salary_min}</div>}
           <Input label="Salary Max" name="salary_max" type="number" value={form.salary_max} onChange={handleChange} required />
+          {fieldErrors.salary_max && <div className="text-red-600 text-sm">{fieldErrors.salary_max}</div>}
         </div>
         <Input label="Location" name="location" value={form.location} onChange={handleChange} required />
+        {fieldErrors.location && <div className="text-red-600 text-sm">{fieldErrors.location}</div>}
         <Input label="Requirements (comma separated)" name="requirements" value={form.requirements} onChange={handleChange} required />
+        {fieldErrors.requirements && <div className="text-red-600 text-sm">{fieldErrors.requirements}</div>}
         <Input label="Responsibilities" name="responsibilities" value={form.responsibilities} onChange={handleChange} required />
+        {fieldErrors.responsibilities && <div className="text-red-600 text-sm">{fieldErrors.responsibilities}</div>}
         <Input label="Skills (comma separated)" name="skills" value={form.skills} onChange={handleChange} required />
+        {fieldErrors.skills && <div className="text-red-600 text-sm">{fieldErrors.skills}</div>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="visa_sponsorship" className="block text-sm font-medium text-gray-700 mb-1">Visa Sponsorship</label>
@@ -131,6 +168,7 @@ const CreateJob = () => {
         <Input label="Nice to haves" name="nice_to_haves" value={form.nice_to_haves} onChange={handleChange} />
         <Input label="About team" name="about_team" value={form.about_team} onChange={handleChange} />
         <Input label="Application Deadline" name="application_deadline" type="date" value={form.application_deadline} onChange={handleChange} required />
+        {fieldErrors.application_deadline && <div className="text-red-600 text-sm">{fieldErrors.application_deadline}</div>}
 
         {error && <div className="text-red-600 text-sm">{error}</div>}
 

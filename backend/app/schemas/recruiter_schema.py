@@ -27,3 +27,22 @@ class RecruiterPostJobSchema(Schema):
     work_authorization = fields.String(allow_none=True)
     nice_to_haves = fields.String(allow_none=True)
     about_team = fields.String(allow_none=True)
+
+
+class RecruiterJobUpdateSchema(Schema):
+    title = fields.String(validate=validate.Length(min=3))
+    description = fields.String(validate=validate.Length(min=10))
+    salary_min = fields.Float()
+    salary_max = fields.Float()
+    location = fields.String()
+    requirements = fields.List(fields.String(validate=validate.Length(min=1)))
+    responsibilities = fields.String()
+    skills = fields.List(fields.String(validate=validate.Length(min=1)))
+    application_deadline = fields.Date()
+    employment_type = fields.String(validate=validate.OneOf(['full_time','part_time','contract','internship','temporary']))
+    seniority = fields.String(validate=validate.OneOf(['intern','junior','mid','senior','lead']))
+    work_mode = fields.String(validate=validate.OneOf(['onsite','remote','hybrid']))
+    visa_sponsorship = fields.Boolean()
+    work_authorization = fields.String()
+    nice_to_haves = fields.String()
+    about_team = fields.String()

@@ -39,10 +39,13 @@ const CandidateDashboard = () => {
         <div className="card">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            <Link to="/recruiter-request" className="btn-primary w-full">
-              Request Recruiter Access
+            <Link to="/profile" className="btn-primary w-full">
+              Manage Profile & Access
             </Link>
-            <p className="text-gray-500 text-sm">
+            <Link to="/jobs" className="btn-secondary w-full">
+              Browse Jobs
+            </Link>
+            <p className="text-gray-500 text-sm mt-2">
               Job browsing features coming soon...
             </p>
           </div>

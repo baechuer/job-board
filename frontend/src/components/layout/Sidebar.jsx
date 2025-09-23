@@ -55,6 +55,30 @@ const Sidebar = () => {
             </Link>
           )}
 
+          {isRecruiter() && (
+            <Link
+              to="/recruiter/my-jobs"
+              className={`block px-3 py-2 rounded-lg ${
+                isActive('/recruiter/my-jobs') 
+                  ? 'bg-primary-100 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              My Jobs
+            </Link>
+          )}
+
+          <Link
+            to="/jobs"
+            className={`block px-3 py-2 rounded-lg ${
+              isActive('/jobs') 
+                ? 'bg-primary-100 text-primary-700' 
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            Browse Jobs
+          </Link>
+
           <Link
             to="/profile"
             className={`block px-3 py-2 rounded-lg ${
