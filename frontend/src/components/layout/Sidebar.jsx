@@ -42,6 +42,19 @@ const Sidebar = () => {
             </Link>
           )}
 
+          {isAdmin() && (
+            <Link
+              to="/admin/users"
+              className={`block px-3 py-2 rounded-lg ${
+                isActive('/admin/users') 
+                  ? 'bg-primary-100 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Manage Users
+            </Link>
+          )}
+
           {isRecruiter() && (
             <Link
               to="/recruiter/create-job"
@@ -78,6 +91,32 @@ const Sidebar = () => {
           >
             Browse Jobs
           </Link>
+
+          {isCandidate() && (
+            <Link
+              to="/candidate/applications"
+              className={`block px-3 py-2 rounded-lg ${
+                isActive('/candidate/applications') 
+                  ? 'bg-primary-100 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              My Applications
+            </Link>
+          )}
+
+          {isCandidate() && (
+            <Link
+              to="/candidate/saved-jobs"
+              className={`block px-3 py-2 rounded-lg ${
+                isActive('/candidate/saved-jobs') 
+                  ? 'bg-primary-100 text-primary-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Saved Jobs
+            </Link>
+          )}
 
           <Link
             to="/profile"

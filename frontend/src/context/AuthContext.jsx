@@ -48,6 +48,9 @@ export const AuthProvider = ({ children }) => {
       const userData = await authService.getProfile();
       setUser(userData?.data?.user || userData.user);
       
+      // Clear pending verification email on successful login
+      try { localStorage.removeItem('pendingVerificationEmail'); } catch {}
+      
       return { success: true };
     } catch (error) {
       console.error('Login failed:', error);

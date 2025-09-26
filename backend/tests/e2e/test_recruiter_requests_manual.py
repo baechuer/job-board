@@ -28,7 +28,11 @@ def test_recruiter_request_flow():
     
     # 1. Register test user
     print("1. Registering test user...")
-    response = requests.post(f"{BASE_URL}/api/auth/register", json=test_user)
+    try:
+        response = requests.post(f"{BASE_URL}/api/auth/register", json=test_user, timeout=2)
+    except requests.exceptions.ConnectionError:
+        import pytest
+        pytest.skip("Server not running on localhost:5000; skipping manual E2E test")
     if response.status_code == 201:
         print("✅ User registered successfully")
         user_data = response.json()

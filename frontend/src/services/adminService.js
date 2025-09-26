@@ -15,4 +15,10 @@ export const adminService = {
   
   cleanupCompletedRequests: () => 
     api.post('/admin/recruiter-requests/cleanup'),
+
+  getMetrics: () => 
+    api.get('/admin/metrics', { validateStatus: (s) => s === 200 || s === 304 }),
+
+  listUsers: (params, options = {}) => 
+    api.get('/admin/users', { params, ...options }),
 };

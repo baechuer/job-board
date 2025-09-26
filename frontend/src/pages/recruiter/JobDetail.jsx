@@ -8,6 +8,8 @@ const JobDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [archiving, setArchiving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +25,24 @@ const JobDetail = () => {
     })();
   }, [id]);
 
+  const handleDeleteJob = async () => {
+    setDeleting(true);
+    try {
+      const response = await api.delete(`/recruiter/my-jobs/${job.id}`);
+      console.log('Job deletion summary:', response.data.deletion_summary);
+      
+      // Show success message and navigate
+      alert(`Job "${job.title}" has been permanently deleted.\n\nDeletion Summary:\n- Applications deleted: ${response.data.deletion_summary.applications_deleted}\n- Files deleted: ${response.data.deletion_summary.file_cleanup.files_deleted}\n- Folders deleted: ${response.data.deletion_summary.file_cleanup.folders_deleted}`);
+      
+      navigate('/recruiter/my-jobs');
+    } catch (e) {
+      setError(e?.response?.data?.error || 'Failed to delete job');
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <div className="max-w-3xl mx-auto">Loading...</div>;
   if (error) return <div className="max-w-3xl mx-auto text-red-600">{error}</div>;
   if (!job) return null;
@@ -33,30 +53,38 @@ const JobDetail = () => {
         <button onClick={() => navigate(-1)} className="text-sm text-primary-600 hover:text-primary-700 hover:underline">← Back</button>
       </div>
       <div className="bg-white shadow-sm border border-gray-200 rounded-lg p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{job.title}</h1>
-            <p className="text-sm text-gray-500 mt-1">Created {formatDate(job.created_at)}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button disabled={archiving} onClick={async () => {
-              setArchiving(true);
-              try {
-                if (job.status === 'deprecated') {
-                  await api.post(`/recruiter/my-jobs/${job.id}/unarchive`);
-                } else {
-                  await api.post(`/recruiter/my-jobs/${job.id}/archive`);
-                }
-                navigate('/recruiter/my-jobs');
-              } catch (e) {
-              } finally {
-                setArchiving(false);
+        {/* Header Section */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
+          <p className="text-sm text-gray-500">Created {formatDate(job.created_at)}</p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <button disabled={archiving} onClick={async () => {
+            setArchiving(true);
+            try {
+              if (job.status === 'deprecated') {
+                await api.post(`/recruiter/my-jobs/${job.id}/unarchive`);
+              } else {
+                await api.post(`/recruiter/my-jobs/${job.id}/archive`);
               }
-            }} className="btn-secondary disabled:opacity-50">
-              {archiving ? (job.status === 'deprecated' ? 'Unarchiving…' : 'Archiving…') : (job.status === 'deprecated' ? 'Unarchive Job' : 'Archive Job')}
-            </button>
-            <button onClick={() => navigate(`/recruiter/edit-job/${job.id}`)} className="btn-primary">Edit Job</button>
-          </div>
+              navigate('/recruiter/my-jobs');
+            } catch (e) {
+            } finally {
+              setArchiving(false);
+            }
+          }} className="btn-secondary disabled:opacity-50 whitespace-nowrap">
+            {archiving ? (job.status === 'deprecated' ? 'Unarchiving…' : 'Archiving…') : (job.status === 'deprecated' ? 'Unarchive Job' : 'Archive Job')}
+          </button>
+          <button onClick={() => navigate(`/recruiter/jobs/${job.id}/applications`)} className="btn-primary whitespace-nowrap">View Applications</button>
+          <button onClick={() => navigate(`/recruiter/edit-job/${job.id}`)} className="btn-secondary whitespace-nowrap">Edit Job</button>
+          <button 
+            onClick={() => setShowDeleteModal(true)}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap"
+          >
+            Delete Job
+          </button>
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -95,6 +123,54 @@ const JobDetail = () => {
           <p className="whitespace-pre-wrap leading-relaxed text-gray-800">{job.about_team || '—'}</p>
         </Section>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="mt-2 text-center">
+                <h3 className="text-lg font-medium text-gray-900">Delete Job</h3>
+                <div className="mt-2 px-7 py-3">
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to permanently delete <strong>"{job.title}"</strong>?
+                  </p>
+                  <p className="text-sm text-red-600 mt-2">
+                    This action cannot be undone. This will delete:
+                  </p>
+                  <ul className="text-sm text-gray-600 mt-1 text-left">
+                    <li>• The job posting</li>
+                    <li>• All applications for this job</li>
+                    <li>• All resume and cover letter files</li>
+                    <li>• All saved job records</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="flex space-x-3 mt-4">
+                <button
+                  onClick={handleDeleteJob}
+                  disabled={deleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  {deleting ? 'Deleting...' : 'Yes, Delete Job'}
+                </button>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 disabled:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

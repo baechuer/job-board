@@ -3,8 +3,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Jobs from './Jobs';
 
-// We'll inject a fake fetcher instead of mocking axios to avoid AbortController quirks
-
 const renderPage = (fetcher) => {
   const qc = new QueryClient();
   return render(
@@ -27,29 +25,23 @@ it('calls fetcher on mount', async () => {
 });
 
 it('debounces search input and cancels previous requests', async () => {
-  // initial load
   const fake = vi.fn(() => Promise.resolve({ jobs: [], pages:1, current_page:1 }));
   renderPage(fake);
   await waitFor(() => expect(fake).toHaveBeenCalledTimes(1));
 
   const input = screen.getByPlaceholderText(/Search by job title or skills/i);
 
-  // Type quickly: r, re, rea
   fake.mockResolvedValue({ jobs: [ { id:1, title:'React Dev', location:'Remote', skills:['react'] } ], pages:1, current_page:1 });
   fireEvent.change(input, { target: { value: 'r' } });
   fireEvent.change(input, { target: { value: 're' } });
   fireEvent.change(input, { target: { value: 'rea' } });
 
-  // wait less than debounce interval -> no call yet
   await wait(200);
-  expect(fake).toHaveBeenCalledTimes(1); // only initial load
+  expect(fake).toHaveBeenCalledTimes(1);
 
-  // advance past debounce
   await wait(150);
-  // one debounced call should fire
   await waitFor(() => expect(fake).toHaveBeenCalledTimes(2));
 
-  // Clear query via button
   const clearBtn = await screen.findByRole('button', { name: /clear/i });
   fake.mockResolvedValueOnce({ jobs: [], pages:1, current_page:1 });
   fireEvent.click(clearBtn);

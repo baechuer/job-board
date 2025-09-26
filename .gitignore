@@ -75,3 +75,7 @@ app/static/resumes/*
 static/resumes/*
 static\resumes\*
 !static/resumes/.gitkeep
+
+# Ignore uploaded files
+backend/static/*
+!backend/static/.gitkeep

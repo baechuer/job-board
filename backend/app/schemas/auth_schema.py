@@ -2,7 +2,8 @@ from marshmallow import Schema, fields, validate, ValidationError, validates_sch
 import re
 class RegisterSchema(Schema):
     email = fields.Email(required=True)
-    password = fields.String(required=True, validate=validate.Length(min=6))
+    # Let application-level strength validator handle length/complexity
+    password = fields.String(required=True)
     username = fields.String(required=True, validate=validate.Regexp(r'^[a-zA-Z0-9_]+$'))
     @validates_schema
     def check_strength(self, data, **kwargs):
@@ -25,6 +26,7 @@ class ResetPasswordRequestSchema(Schema):
 
 class VerifyResetPasswordSchema(Schema):
     token = fields.String(required=True)
+    # Let application-level strength validator handle length/complexity
     new_password = fields.String(required=True)
     @validates_schema
     def check_strength(self, data, **kwargs):

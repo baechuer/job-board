@@ -3,6 +3,7 @@ from ..extensions import db
 from ..models.job import Job
 from ..common.exceptions import ConflictError
 from datetime import datetime, date, UTC, timedelta
+from .file_cleanup_service import FileCleanupService
 
 
 class JobService:
@@ -63,25 +64,16 @@ class JobService:
             page = 1
         if per_page < 1:
             per_page = 20
-        # Count total
-        base_q = select(Job).where(Job.user_id == user_id)
-        # Apply status filter at DB level when possible
-        today = datetime.now(UTC).date()
-        if status == "active":
-            base_q = base_q.where((Job.application_deadline == None) | (Job.application_deadline >= today))  # noqa: E711
-        elif status == "deprecated":
-            base_q = base_q.where((Job.application_deadline != None) & (Job.application_deadline < today))  # noqa: E711
-        total_q = db.session.execute(base_q).scalars()
-        total = total_q.count() if hasattr(total_q, 'count') else None
-        # Page query
-        page_q = base_q.order_by(Job.created_at.desc()).limit(per_page).offset((page - 1) * per_page)
-        jobs = db.session.execute(page_q).scalars().all()
+        # Load all user's jobs ordered by created_at desc
+        base_q = select(Job).where(Job.user_id == user_id).order_by(Job.created_at.desc())
+        jobs = db.session.execute(base_q).scalars().all()
         results: list[dict] = []
+        today = datetime.now(UTC).date()
         for job in jobs:
             # Compute status based on deadline
             computed_status = "active"
             if job.application_deadline and isinstance(job.application_deadline, date):
-                if job.application_deadline < datetime.now(UTC).date():
+                if job.application_deadline < today:
                     computed_status = "deprecated"
             # Lightweight list DTO (omit large fields)
             results.append({
@@ -98,14 +90,19 @@ class JobService:
                 "updated_at": job.updated_at.isoformat() if job.updated_at else None,
                 "status": computed_status,
             })
-        # Compute pages if total known
-        pages = None
-        if total is not None:
-            pages = (total + per_page - 1) // per_page
+        # Filter by status in Python
+        if status in {"active", "deprecated"}:
+            results = [r for r in results if r.get("status") == status]
+        total = len(results)
+        pages = (total + per_page - 1) // per_page if total else 1
+        # Apply pagination in Python
+        start = (page - 1) * per_page
+        end = start + per_page
+        results = results[start:end]
         return {
             "jobs": results,
-            "total": total if total is not None else len(results),
-            "pages": pages if pages is not None else 1,
+            "total": total,
+            "pages": pages,
             "current_page": page,
             "per_page": per_page,
         }
@@ -138,8 +135,9 @@ class JobService:
         if not job or job.user_id != user_id:
             return None
         computed_status = "active"
+        today = datetime.now(UTC).date()
         if job.application_deadline and isinstance(job.application_deadline, date):
-            if job.application_deadline < datetime.now(UTC).date():
+            if job.application_deadline < today:
                 computed_status = "deprecated"
         return {
             "id": job.id,
@@ -208,6 +206,88 @@ class JobService:
         db.session.commit()
         return self.get_job(user_id, job_id)
 
+    def delete_job(self, user_id: int, job_id: int) -> dict:
+        """
+        Permanently delete a job and all associated data.
+        This includes:
+        - The job record
+        - All applications for this job
+        - All saved job records for this job
+        - All associated files (resumes, cover letters)
+        - Empty folders
+        
+        Args:
+            user_id: ID of the user requesting deletion
+            job_id: ID of the job to delete
+            
+        Returns:
+            dict: Deletion summary with cleanup details
+            
+        Raises:
+            ValueError: If job not found or user doesn't own the job
+        """
+        # Verify job exists and user owns it
+        job = db.session.execute(
+            select(Job).where(Job.id == job_id, Job.user_id == user_id)
+        ).scalar_one_or_none()
+        
+        if not job:
+            raise ValueError("Job not found or access denied")
+        
+        deletion_summary = {
+            'job_id': job_id,
+            'job_title': job.title,
+            'applications_deleted': 0,
+            'saved_jobs_deleted': 0,
+            'file_cleanup': {},
+            'errors': []
+        }
+        
+        try:
+            # Get counts before deletion for summary
+            from ..models.application import Application
+            from ..models.saved_job import SavedJob
+            
+            applications_count = db.session.execute(
+                select(func.count(Application.id)).where(Application.job_id == job_id)
+            ).scalar() or 0
+            
+            saved_jobs_count = db.session.execute(
+                select(func.count(SavedJob.id)).where(SavedJob.job_id == job_id)
+            ).scalar() or 0
+            
+            deletion_summary['applications_deleted'] = applications_count
+            deletion_summary['saved_jobs_deleted'] = saved_jobs_count
+            
+            # Clean up files before deleting database records
+            file_cleanup_service = FileCleanupService()
+            deletion_summary['file_cleanup'] = file_cleanup_service.cleanup_job_files(job_id)
+            
+            # Manually delete applications and saved jobs (for compatibility with existing schema)
+            applications_to_delete = db.session.execute(
+                select(Application).where(Application.job_id == job_id)
+            ).scalars().all()
+            
+            for app in applications_to_delete:
+                db.session.delete(app)
+            
+            saved_jobs_to_delete = db.session.execute(
+                select(SavedJob).where(SavedJob.job_id == job_id)
+            ).scalars().all()
+            
+            for saved_job in saved_jobs_to_delete:
+                db.session.delete(saved_job)
+            
+            # Delete the job
+            db.session.delete(job)
+            db.session.commit()
+            
+        except Exception as e:
+            db.session.rollback()
+            deletion_summary['errors'].append(f"Deletion failed: {str(e)}")
+            raise e
+        
+        return deletion_summary
 
     def search_public_jobs(self, q: str | None, page: int = 1, per_page: int = 20) -> dict:
         if page < 1:

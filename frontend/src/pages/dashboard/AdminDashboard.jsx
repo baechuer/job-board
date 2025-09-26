@@ -1,9 +1,38 @@
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { adminService } from '../../services/adminService';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, token, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!isAdmin()) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await adminService.getMetrics();
+        // Support 304: if cached by axios interceptor, res may be last data
+        if (res.status === 200 && mounted) {
+          setMetrics(res.data);
+        }
+      } catch (e) {
+        if (mounted) setError(e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    const id = setInterval(load, 60000);
+    return () => { mounted = false; clearInterval(id); };
+  }, [token]);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -14,25 +43,35 @@ const AdminDashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="card">
-          <div className="text-2xl font-bold text-primary-600">12</div>
-          <div className="text-gray-600">Pending Requests</div>
-        </div>
-        
-        <div className="card">
-          <div className="text-2xl font-bold text-green-600">156</div>
-          <div className="text-gray-600">Total Users</div>
-        </div>
-        
-        <div className="card">
-          <div className="text-2xl font-bold text-blue-600">89</div>
-          <div className="text-gray-600">Active Jobs</div>
-        </div>
-        
-        <div className="card">
-          <div className="text-2xl font-bold text-purple-600">45</div>
-          <div className="text-gray-600">Recruiters</div>
-        </div>
+        {loading ? (
+          <>
+            <div className="card animate-pulse h-20" />
+            <div className="card animate-pulse h-20" />
+            <div className="card animate-pulse h-20" />
+            <div className="card animate-pulse h-20" />
+          </>
+        ) : error ? (
+          <div className="col-span-4 card text-red-600">Failed to load metrics</div>
+        ) : (
+          <>
+            <div className="card">
+              <div className="text-2xl font-bold text-primary-600">{metrics?.pending_recruiter_requests ?? 0}</div>
+              <div className="text-gray-600">Pending Requests</div>
+            </div>
+            <div className="card">
+              <div className="text-2xl font-bold text-green-600">{metrics?.total_users ?? 0}</div>
+              <div className="text-gray-600">Total Users</div>
+            </div>
+            <div className="card">
+              <div className="text-2xl font-bold text-blue-600">{metrics?.active_jobs ?? 0}</div>
+              <div className="text-gray-600">Active Jobs</div>
+            </div>
+            <div className="card">
+              <div className="text-2xl font-bold text-purple-600">{metrics?.total_recruiters ?? 0}</div>
+              <div className="text-gray-600">Recruiters</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Quick Actions */}

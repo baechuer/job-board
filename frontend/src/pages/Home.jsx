@@ -23,6 +23,9 @@ const Home = () => {
             <Link to="/login" className="btn-secondary text-lg px-8 py-3">
               Sign In
             </Link>
+            <Link to="/jobs" className="btn-secondary text-lg px-8 py-3">
+              Browse Jobs
+            </Link>
           </div>
         ) : (
           <div className="space-x-4">

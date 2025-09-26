@@ -1,3 +1,7 @@
+from app.extensions import db
+from app.models.user import User
+from app.models.user_role import UserRole
+
 def auth_header(token):
   return {"Authorization": f"Bearer {token}"}
 
@@ -133,6 +137,11 @@ def test_metrics_counts_active_jobs(client):
   email = "metrics@example.com"
   client.post("/api/auth/register", json={"email": email, "password": "Password123!", "username": "m"})
   access = client.post("/api/auth/login", json={"email": email, "password": "Password123!"}).get_json()["access_token"]
+  
+  # Add recruiter role to the user
+  user = db.session.execute(db.select(User).where(User.email == email)).scalar_one()
+  user.roles.append(UserRole(role="recruiter"))
+  db.session.commit()
   base = {
     "description": "desc long enough",
     "salary_min": 1,
@@ -144,8 +153,10 @@ def test_metrics_counts_active_jobs(client):
     "application_deadline": "2030-10-31",
   }
   # Create two active jobs
-  client.post("/api/recruiter/create-job", json={"title": "J1", **base}, headers=auth_header(access))
-  client.post("/api/recruiter/create-job", json={"title": "J2", **base}, headers=auth_header(access))
+  res1 = client.post("/api/recruiter/create-job", json={"title": "Job One", **base}, headers=auth_header(access))
+  res2 = client.post("/api/recruiter/create-job", json={"title": "Job Two", **base}, headers=auth_header(access))
+  assert res1.status_code == 201, f"Job creation failed: {res1.get_json()}"
+  assert res2.status_code == 201, f"Job creation failed: {res2.get_json()}"
 
   # Sanity: list active should see 2
   res_list = client.get("/api/recruiter/my-jobs?status=active", headers=auth_header(access))

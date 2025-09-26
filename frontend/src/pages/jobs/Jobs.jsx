@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import api from '../services/api';
+import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import useDebouncedValue from '../../hooks/useDebouncedValue';
 
 const defaultFetcher = async ({ q, page, perPage, signal }) => {
   const resp = await api.get('/recruiter/jobs', { params: { q: q || undefined, page, per_page: perPage }, signal });
@@ -29,34 +30,29 @@ const Jobs = ({ fetcher = defaultFetcher }) => {
     }
   };
 
+  const didMountRef = useRef(false);
   useEffect(() => {
     const controller = new AbortController();
-    fetchJobs(q, page, controller.signal);
+    if (didMountRef.current) {
+      fetchJobs(q, page, controller.signal);
+    } else {
+      didMountRef.current = true; // initial render handled by debounced effect
+    }
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  // Debounced on-change search
-  const debounceRef = useRef(null);
+  // Debounced search
+  const dq = useDebouncedValue(q, 300);
   useEffect(() => {
-    // Reset to first page on query changes
     setPage(1);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
     const controller = new AbortController();
-    debounceRef.current = setTimeout(() => {
-      // Only trigger auto search when empty or >= 2 chars
-      if (q.length === 0 || q.length >= 2) {
-        fetchJobs(q, 1, controller.signal);
-      }
-    }, 300);
-
-    return () => {
-      clearTimeout(debounceRef.current);
-      controller.abort();
-    };
+    if (dq.length === 0 || dq.length >= 2) {
+      fetchJobs(dq, 1, controller.signal);
+    }
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
+  }, [dq]);
 
   const onSearch = (e) => {
     e.preventDefault();
@@ -129,5 +125,6 @@ const Jobs = ({ fetcher = defaultFetcher }) => {
 };
 
 export default Jobs;
+
 
 

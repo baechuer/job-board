@@ -2,6 +2,10 @@ from flask import jsonify
 from marshmallow import ValidationError as MarshmallowValidationError
 from .exceptions import BusinessLogicError
 import traceback
+try:
+    from flask_limiter.errors import RateLimitExceeded
+except Exception:  # pragma: no cover
+    RateLimitExceeded = None
 
 def register_error_handlers(app):
     @app.errorhandler(400)
@@ -17,6 +21,12 @@ def register_error_handlers(app):
     def unprocessable(err):
         msg = getattr(err, "description", "unprocessable")
         return jsonify(error=msg), 422
+
+    # Handle rate limiting with proper 429 status
+    if RateLimitExceeded is not None:
+        @app.errorhandler(RateLimitExceeded)
+        def handle_rate_limit(err):
+            return jsonify(error="Rate limit exceeded"), 429
 
     @app.errorhandler(BusinessLogicError)
     def handle_business_logic_error(err):
