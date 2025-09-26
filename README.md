@@ -1,5 +1,70 @@
 # Job-Board
-Job Board is a platform where employers can post job listings, and candidates can apply for those positions.
+Job Board is a full‑stack recruiting platform. Employers (recruiters) can post jobs and review applications; candidates can browse and apply; admins manage users and recruiter requests. The app ships with Docker Compose (NGINX + Flask backend + Postgres DB) and a modern React (Vite) frontend.
+
+## Highlights
+- Single-origin deployment with NGINX serving the SPA and proxying `/api` → no CORS in prod
+- Admin dashboard with live metrics and recent activity feed
+- Admin users management: list, detail, edit (no code needed for admin edits)
+- Recruiter request workflow (request, admin review approve/reject)
+- Candidate job browsing and application submission with resume/cover letter validation
+- Profile update flow with 6‑digit email verification code (for non-admin users)
+- JWT auth with refresh, token revocation, and role‑based access control (admin, recruiter, candidate)
+- Comprehensive tests (pytest backend, Vitest frontend), Playwright e2e optional
+
+## Folder Structure
+```
+flask-framework/job-board/
+  backend/                 # Flask application (Gunicorn in prod)
+    app/
+      api/                 # Blueprints: auth, admin, recruiter, candidate, applications
+      common/              # Security utils, validators
+      config/              # Environment configs
+      models/              # SQLAlchemy models
+      cli/                 # CLI commands (backup group)
+      services/            # Business logic
+      schemas/             # Marshmallow schemas
+      wsgi.py              # WSGI entry
+    tests/                 # pytest suites
+    Dockerfile
+    requirements.txt
+  frontend/                # React (Vite) SPA
+    src/
+      pages/               # Routes & pages
+      components/          # Reusable components
+      services/            # Axios API wrappers
+    package.json
+  nginx.conf               # Serves SPA & proxies /api → backend
+  Dockerfile.nginx         # Builds frontend & serves via NGINX
+  docker-compose.yml       # NGINX + backend + Postgres
+  README.md
+```
+
+## Core Workflows
+- Admin
+  - Sign in → Dashboard shows metrics and recent activity
+  - Manage Users → Click user row to view/edit (email/username/role)
+  - Review recruiter requests → approve/reject with notes
+- Recruiter
+  - Create job → Manage “My Jobs” → View applications and application details
+- Candidate
+  - Browse jobs → Apply with resume/cover letter (file validation & optional virus scan)
+  - Profile → Edit username/email (requires emailed 6‑digit verification code)
+
+## Key API Endpoints (selected)
+- Auth: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/refresh`
+- Profile update (user):
+  - `POST /api/auth/profile/update/request-code`
+  - `POST /api/auth/profile/update/verify-code`
+  - `PUT  /api/auth/profile`
+- Admin:
+  - Metrics: `GET /api/admin/metrics`
+  - Recent activity: `GET /api/admin/activity_recent`
+  - Users: `GET /api/admin/users`, `GET /api/admin/users/:id`, `PUT /api/admin/users/:id`
+  - Recruiter requests: `GET /api/admin/recruiter-requests`, `PUT /api/admin/recruiter-requests/:id/approve`, `PUT /api/admin/recruiter-requests/:id/reject`
+- Recruiter:
+  - Jobs & applications under `/api/recruiter/*`
+- Applications (common): `/api/applications/...` for job applications and file downloads
+
 
 ## Environment Variables Setup
 
