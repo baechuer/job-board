@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-changeme}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-changeme}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://jobboard:jobboard@db:5432/jobboard}
+      # Seed admin on startup (optional)
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Password123!}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USE_TLS=${MAIL_USE_TLS:-1}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - RATELIMIT_ENABLED=${RATELIMIT_ENABLED:-false}
+      # Use a valid rate string to avoid parser warnings; enable by setting RATELIMIT_ENABLED=true
+      - RATELIMIT_DEFAULT=${RATELIMIT_DEFAULT:-20 per hour}
+    expose:
+      - "5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=/api
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-jobboard}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-jobboard}
+      - POSTGRES_DB=${POSTGRES_DB:-jobboard}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
+

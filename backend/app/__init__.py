@@ -174,6 +174,41 @@ def create_app(config_object=DevConfig) -> Flask:
     register_api(app)
     init_db_commands(app)
     
+    # Optional: seed an admin user if configured via environment
+    try:
+        admin_email = os.getenv("ADMIN_EMAIL")
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        admin_username = os.getenv("ADMIN_USERNAME", "admin")
+        if admin_email and admin_password:
+            from .models.user import User
+            from .models.user_role import UserRole
+            from .common.security import hash_password
+            with app.app_context():
+                existing = db.session.execute(select(User).where(User.email == admin_email.strip().lower())).scalar_one_or_none()
+                if not existing:
+                    u = User(
+                        email=admin_email.strip().lower(),
+                        username=admin_username.strip(),
+                        password_hash=hash_password(admin_password),
+                        is_verified=True,
+                    )
+                    db.session.add(u)
+                    db.session.flush()
+                    db.session.add(UserRole(user_id=u.id, role='admin'))
+                    db.session.commit()
+                else:
+                    # Ensure admin role present
+                    try:
+                        roles = [r.role for r in existing.roles]
+                        if 'admin' not in roles:
+                            db.session.add(UserRole(user_id=existing.id, role='admin'))
+                            db.session.commit()
+                    except Exception:
+                        pass
+    except Exception:
+        # Seeding should not block app startup
+        pass
+
     # Initialize database tables for development only
     # In production, use: flask db upgrade
     if app.config.get('ENV') == 'development' and not app.config.get('TESTING', False):

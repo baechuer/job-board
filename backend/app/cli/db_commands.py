@@ -8,14 +8,14 @@ from app.services.backup_service import (
     list_backups_command
 )
 
-# Create CLI group for database operations
-db_cli = AppGroup('db')
+# Create CLI group for backup operations (avoid clashing with Flask-Migrate 'db')
+backup_cli = AppGroup('backup')
 
 # Add backup commands
-db_cli.command('backup')(create_backup_command())
-db_cli.command('restore')(restore_backup_command())
-db_cli.command('list-backups')(list_backups_command())
+backup_cli.command('create')(create_backup_command())
+backup_cli.command('restore')(restore_backup_command())
+backup_cli.command('list')(list_backups_command())
 
 def init_db_commands(app):
-    """Initialize database CLI commands"""
-    app.cli.add_command(db_cli)
+    """Initialize backup CLI commands and keep Flask-Migrate 'db' group intact"""
+    app.cli.add_command(backup_cli)
