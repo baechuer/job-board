@@ -6,3 +6,4 @@ from .saved_job import SavedJob  # noqa: F401
 from .application import Application  # noqa: F401
 
 
+from .verification_code import VerificationCode  # noqa: F401

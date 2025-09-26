@@ -96,7 +96,7 @@ export default function Users() {
                         const name = u.username || u.email;
                         const initials = (name || '').split(/\s|\./).filter(Boolean).slice(0,2).map(s => s[0]?.toUpperCase()).join('') || 'U';
                         return (
-                          <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                          <tr key={u.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/users/${u.id}`)}>
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-3">
                                 <div className="h-9 w-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold">{initials}</div>
@@ -131,7 +131,7 @@ export default function Users() {
                   const name = u.username || u.email;
                   const initials = (name || '').split(/\s|\./).filter(Boolean).slice(0,2).map(s => s[0]?.toUpperCase()).join('') || 'U';
                   return (
-                    <div key={u.id} className="card transition-shadow hover:shadow-md hover:border-primary-200">
+                    <div key={u.id} className="card transition-shadow hover:shadow-md hover:border-primary-200 cursor-pointer" onClick={() => navigate(`/admin/users/${u.id}`)}>
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold">{initials}</div>
                         <div className="flex-1">

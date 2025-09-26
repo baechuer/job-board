@@ -7,6 +7,7 @@ const AdminDashboard = () => {
   const { user, token, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState(null);
+  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,6 +24,8 @@ const AdminDashboard = () => {
         if (res.status === 200 && mounted) {
           setMetrics(res.data);
         }
+        const a = await adminService.getRecentActivity();
+        if (a.status === 200 && mounted) setActivity(a.data?.items || []);
       } catch (e) {
         if (mounted) setError(e);
       } finally {
@@ -82,11 +85,8 @@ const AdminDashboard = () => {
             <button className="btn-primary w-full" onClick={() => navigate('/admin/recruiter-requests')}>
               Review Recruiter Requests
             </button>
-            <button className="btn-secondary w-full">
+            <button className="btn-secondary w-full" onClick={() => navigate('/admin/users')}>
               Manage Users
-            </button>
-            <button className="btn-secondary w-full">
-              System Settings
             </button>
           </div>
         </div>
@@ -94,18 +94,16 @@ const AdminDashboard = () => {
         <div className="card">
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
           <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm">New recruiter request from john.doe@example.com</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-sm">User jane.smith registered</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span className="text-sm">Job posting "Senior Developer" was created</span>
-            </div>
+            {activity.length === 0 ? (
+              <div className="text-sm text-gray-500">No recent activity</div>
+            ) : (
+              activity.map((it, idx) => (
+                <div key={idx} className="flex items-center space-x-3">
+                  <div className={`w-2 h-2 rounded-full ${it.level === 'success' ? 'bg-green-500' : it.level === 'warning' ? 'bg-yellow-500' : it.level === 'primary' ? 'bg-blue-500' : 'bg-gray-400'}`}></div>
+                  <span className="text-sm">{it.message}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

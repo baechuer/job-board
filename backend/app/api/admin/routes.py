@@ -12,6 +12,7 @@ from ...models.user_role import UserRole
 from ...models.user import User
 from ...models.job import Job
 from hashlib import sha1
+from datetime import datetime, UTC
 
 # Initialize schemas
 _review_schema = ReviewRequestSchema()
@@ -119,7 +120,6 @@ def metrics():
     total_recruiters = db.session.execute(
         select(func.count(UserRole.id)).where(UserRole.role == 'recruiter')
     ).scalar() or 0
-    from datetime import datetime, UTC
     today = datetime.now(UTC).date()
     active_jobs = db.session.execute(
         select(func.count(Job.id)).where((Job.application_deadline == None) | (Job.application_deadline >= today))  # noqa: E711
@@ -153,6 +153,66 @@ def metrics():
     resp.headers['ETag'] = etag
     resp.headers['Cache-Control'] = 'private, max-age=30'
     return resp, 200
+
+
+@admin_bp.get('/activity_recent')
+@jwt_required()
+@admin_required
+def activity_recent():
+    """Return a small recent activity feed aggregated from users, jobs, and recruiter requests."""
+    items = []
+    try:
+        # Latest users
+        latest_users = db.session.execute(
+            select(User).order_by(User.created_at.desc()).limit(5)
+        ).scalars().all()
+        for u in latest_users:
+            items.append({
+                'type': 'user',
+                'when': u.created_at.isoformat() if u.created_at else None,
+                'message': f"User {u.email} registered",
+                'level': 'info',
+            })
+    except Exception:
+        pass
+    try:
+        # Latest jobs
+        latest_jobs = db.session.execute(
+            select(Job).order_by(Job.id.desc()).limit(5)
+        ).scalars().all()
+        for j in latest_jobs:
+            items.append({
+                'type': 'job',
+                'when': None,
+                'message': f"Job '{getattr(j, 'title', 'Untitled')}' created",
+                'level': 'primary',
+            })
+    except Exception:
+        pass
+    try:
+        from ...models.recruiter_request import RecruiterRequest
+        latest_req = db.session.execute(
+            select(RecruiterRequest).order_by(RecruiterRequest.created_at.desc()).limit(5)
+        ).scalars().all()
+        for r in latest_req:
+            items.append({
+                'type': 'recruiter_request',
+                'when': r.created_at.isoformat() if getattr(r, 'created_at', None) else None,
+                'message': f"Recruiter request from {getattr(r, 'email', 'unknown')}",
+                'level': 'success' if getattr(r, 'status', '') == 'approved' else 'warning' if getattr(r, 'status','')=='pending' else 'muted',
+            })
+    except Exception:
+        pass
+
+    # Sort by when desc, unknown last
+    def _key(it):
+        try:
+            return datetime.fromisoformat(it['when']) if it.get('when') else datetime.min
+        except Exception:
+            return datetime.min
+    items.sort(key=_key, reverse=True)
+
+    return jsonify({'items': items[:10]}), 200
 
 
 @admin_bp.get('/users')
@@ -197,3 +257,55 @@ def list_users():
             'pages': (total + per_page - 1) // per_page if total else 1
         }
     }), 200
+
+
+@admin_bp.get('/users/<int:user_id>')
+@jwt_required()
+@admin_required
+def get_user_detail(user_id):
+    user = db.session.get(User, int(user_id))
+    if not user:
+        return jsonify(error='user not found'), 404
+    roles = [r.role for r in user.roles]
+    return jsonify({
+        'id': user.id,
+        'email': user.email,
+        'username': user.username,
+        'roles': roles,
+        'created_at': user.created_at.isoformat() if getattr(user, 'created_at', None) else None,
+        'is_verified': getattr(user, 'is_verified', False),
+    }), 200
+
+
+@admin_bp.put('/users/<int:user_id>')
+@jwt_required()
+@admin_required
+def update_user_detail(user_id):
+    user = db.session.get(User, int(user_id))
+    if not user:
+        return jsonify(error='user not found'), 404
+    payload = request.get_json(silent=True) or {}
+    updated = False
+    # Update username/email without code (admin-only)
+    new_username = payload.get('username')
+    if isinstance(new_username, str) and new_username.strip() and new_username != user.username:
+        user.username = new_username.strip()
+        updated = True
+    new_email = payload.get('email')
+    if isinstance(new_email, str) and new_email.strip() and new_email.lower() != user.email:
+        user.email = new_email.strip().lower()
+        updated = True
+    # Optionally update role
+    role = payload.get('role')
+    if role in ('candidate', 'recruiter', 'admin'):
+        from ...models.user_role import UserRole
+        # Remove all non-admin roles if setting admin? keep simple: ensure exactly one role provided
+        # For safety, clear existing role entries of candidate/recruiter/admin and add new one
+        for r in user.roles.all():
+            db.session.delete(r)
+        db.session.add(UserRole(user_id=user.id, role=role))
+        updated = True
+    if not updated:
+        return jsonify(msg='no changes'), 200
+    db.session.commit()
+    return jsonify(msg='user updated'), 200

@@ -19,6 +19,24 @@ export const adminService = {
   getMetrics: () => 
     api.get('/admin/metrics', { validateStatus: (s) => s === 200 || s === 304 }),
 
+  getRecentActivity: () =>
+    api.get('/admin/activity_recent'),
+
   listUsers: (params, options = {}) => 
     api.get('/admin/users', { params, ...options }),
+
+  requestProfileCode: () =>
+    api.post('/auth/profile/update/request-code'),
+
+  verifyProfileCode: (code) =>
+    api.post('/auth/profile/update/verify-code', { code }),
+
+  updateProfile: (payload) =>
+    api.put('/auth/profile', payload),
+
+  getUserById: (id) =>
+    api.get(`/admin/users/${id}`),
+
+  updateUserById: (id, payload) =>
+    api.put(`/admin/users/${id}`, payload),
 };

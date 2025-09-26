@@ -19,6 +19,7 @@ import JobApplication from './pages/jobs/JobApplication';
 import RecruiterRequests from './pages/admin/RecruiterRequests';
 import RecruiterRequestDetail from './pages/admin/RecruiterRequestDetail';
 import AdminUsers from './pages/admin/Users';
+import AdminUserDetail from './pages/admin/UserDetail';
 import Profile from './pages/profile/Profile';
 import RecruiterRequest from './pages/RecruiterRequest';
 import CreateJob from './pages/recruiter/CreateJob';
@@ -71,6 +72,7 @@ function App() {
               <Route path="/admin/recruiter-requests" element={<Layout><ProtectedRoute><RoleRoute role="admin"><RecruiterRequests /></RoleRoute></ProtectedRoute></Layout>} />
               <Route path="/admin/recruiter-requests/:id" element={<Layout><ProtectedRoute><RoleRoute role="admin"><RecruiterRequestDetail /></RoleRoute></ProtectedRoute></Layout>} />
               <Route path="/admin/users" element={<Layout><ProtectedRoute><RoleRoute role="admin"><AdminUsers /></RoleRoute></ProtectedRoute></Layout>} />
+              <Route path="/admin/users/:id" element={<Layout><ProtectedRoute><RoleRoute role="admin"><AdminUserDetail /></RoleRoute></ProtectedRoute></Layout>} />
               <Route path="/recruiter-request" element={<Layout><ProtectedRoute><RecruiterRequest /></ProtectedRoute></Layout>} />
               
               {/* Debug Route */}
