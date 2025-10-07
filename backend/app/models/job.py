@@ -39,6 +39,10 @@ class Job(db.Model):
 
     __table_args__ = (
         UniqueConstraint('user_id', 'title', name='uq_jobs_user_title'),
+        # Composite indexes for common query patterns
+        db.Index('idx_jobs_user_created', 'user_id', 'created_at'),
+        db.Index('idx_jobs_deadline_created', 'application_deadline', 'created_at'),
+        db.Index('idx_jobs_user_title', 'user_id', 'title'),
     )
 
 

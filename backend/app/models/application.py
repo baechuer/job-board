@@ -56,6 +56,10 @@ class Application(db.Model):
         db.Index('idx_applications_user', 'user_id'),
         db.Index('idx_applications_job', 'job_id'),
         db.Index('idx_applications_status', 'status'),
+        # Composite indexes for common query patterns
+        db.Index('idx_applications_user_status_created', 'user_id', 'status', 'created_at'),
+        db.Index('idx_applications_user_created', 'user_id', 'created_at'),
+        db.Index('idx_applications_job_created', 'job_id', 'created_at'),
     )
 
     def __repr__(self) -> str:

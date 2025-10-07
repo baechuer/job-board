@@ -14,6 +14,8 @@ class UserRole(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint("user_id", "role", name="uq_user_roles_user_id_role"),
+        # Composite index for admin queries filtering by role
+        db.Index('idx_user_roles_role_user', 'role', 'user_id'),
     )
 
     def __repr__(self) -> str:

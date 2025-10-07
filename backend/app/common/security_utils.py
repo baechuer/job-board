@@ -353,9 +353,23 @@ def validate_and_process_upload(file: FileStorage, allowed_types: List[str] = No
     if not is_valid:
         raise FileValidationError(error_msg)
     
-    # Create temporary file for virus scanning
+    # Create temporary file for virus scanning using streaming
+    file_size = 0
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        file.save(temp_file.name)
+        # Stream the file in chunks instead of loading entirely into memory
+        file.seek(0)  # Reset file pointer
+        while True:
+            chunk = file.read(8192)  # Read 8KB chunks
+            if not chunk:
+                break
+            temp_file.write(chunk)
+            file_size += len(chunk)
+            
+            # Check file size during streaming to avoid processing huge files
+            if file_size > get_max_file_size():
+                os.unlink(temp_file.name)  # Clean up temp file
+                raise FileValidationError(f"File too large: {file_size} bytes (max: {get_max_file_size()} bytes)")
+                
         temp_path = temp_file.name
     
     try:
@@ -370,7 +384,7 @@ def validate_and_process_upload(file: FileStorage, allowed_types: List[str] = No
         return {
             'filename': safe_filename,
             'original_filename': file.filename,
-            'file_size': os.path.getsize(temp_path),
+            'file_size': file_size,
             'file_hash': file_hash,
             'temp_path': temp_path,
             'is_valid': True
