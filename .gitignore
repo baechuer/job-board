@@ -79,3 +79,4 @@ static\resumes\*
 # Ignore uploaded files
 backend/static/*
 !backend/static/.gitkeep
+*RESUME*
