@@ -45,13 +45,13 @@ jobs:
       - name: Run backend tests
         working-directory: ./backend
         env:
-          FLASK_APP: app.wsgi:app
-          TESTING: true
-          SECRET_KEY: test-secret-key-for-ci
-          JWT_SECRET_KEY: test-jwt-secret-key-for-ci
-          DATABASE_URL: sqlite:///:memory:
-          RATELIMIT_ENABLED: false
-          MAIL_SUPPRESS_SEND: 1
+          FLASK_APP: "app.wsgi:app"
+          TESTING: "true"
+          SECRET_KEY: "test-secret-key-for-ci"
+          JWT_SECRET_KEY: "test-jwt-secret-key-for-ci"
+          DATABASE_URL: "sqlite:///:memory:"
+          RATELIMIT_ENABLED: "false"
+          MAIL_SUPPRESS_SEND: "1"
         run: |
           pytest -v --cov=app --cov-report=xml --cov-report=term-missing --tb=short
       
